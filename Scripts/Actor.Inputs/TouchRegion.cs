@@ -20,12 +20,17 @@ namespace Actor.Inputs {
 
     [RequireComponent(typeof(Image))]
     [RequireComponent(typeof(RectTransform))]
-    public class TouchRegion : MonoBehaviour, IPointerEnterHandler,IPointerClickHandler, IDragHandler {
+    public class TouchRegion : MonoBehaviour, IPointerEnterHandler,IPointerClickHandler, IDragHandler, IPointerExitHandler {
         public enum Direction {
             Vertical,
             Horizontal
         }
 
+        const int
+            POINTER_MOUSE = -1,
+            POINTER_TOUCH_MIN = 0;
+
+        [SerializeField] private bool EnableMouseToSimulateTouch = false;
         [SerializeField] private Direction TouchDirection = Direction.Horizontal;
         [SerializeField] private TouchListener[] TouchEventListeners = new TouchListener[0];
         [SerializeField] private Camera TouchCamera;
@@ -33,18 +38,10 @@ namespace Actor.Inputs {
         private Image _TouchRegion;
         private RectTransform _TouchRect;
         private Rect _ScreenRect;
+        private bool _IsWithinRegion;
 
         void Start() {
             SetupRegion();
-        }
-
-        void Update() {
-            if (IsReady) {
-                FireTouchEvents();
-                FireMouseEvents();
-            } else {
-                Debug.LogWarning("Not ready");
-            }
         }
 
         public bool IsReady {
@@ -56,95 +53,42 @@ namespace Actor.Inputs {
             }
         }
 
-        private void FireTouchEvents() {
-            //foreach (Touch aTouch in FindRelevantTouches()) {
-            //    foreach (var listener in TouchEventListeners) {
-            //        listener.TouchEvent(DomainValueFor(aTouch));
-            //    }
-            //}
-        }
-
-        private void FireMouseEvents() {
-            float val = DomainValueFor(Input.mousePosition);
-            if (val > 0) {
-                foreach(var listener in TouchEventListeners) {
-                    listener.TouchEvent(val);
-                }
+        private void FireTouchEvents(float domainValue) {
+            foreach (var listener in TouchEventListeners) {
+                listener.TouchEvent(domainValue);
             }
-        }
-
-        private float DomainValueFor(Vector3 mousePosition) {
-            float domainVal = -1f;
-            if(EventSystem.current.IsPointerOverGameObject() ) {
-                //Debug.LogFormat("Object under mouse at {0}", mousePosition);
-                //domainVal = 
-            }
-            return domainVal;
         }
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData) {
-            UiDebug.Log("Enter Event on TouchRegion: {0}", ComputeDomainValue(eventData.position));
-            Debug.LogFormat("OnPointerEnter: at World {0} Relative {1}\n",
-                eventData.pointerCurrentRaycast.worldNormal,
-                eventData.position
-            );
+            _IsWithinRegion = true;
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData) {
-            UiDebug.Log("Click Event on TouchRegion: {0}", ComputeDomainValue(eventData.position));
-            Debug.LogFormat("OnPointerClick: at World {0} Relative {1}\n",
-                eventData.pointerCurrentRaycast.worldNormal,
-                eventData.position
-            );
+            _IsWithinRegion = true;
+            HandleTouchLikeEvent(eventData);
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData) {
-            UiDebug.Log("Drag Event on TouchRegion: {0}", ComputeDomainValue(eventData.position) );
-            Debug.LogFormat("OnDrag: at World {0} Relative {1}\n",
-                eventData.pointerCurrentRaycast.worldNormal,
-                eventData.position
-            );
+            if (_IsWithinRegion) {
+                HandleTouchLikeEvent(eventData);
+            }
         }
 
-        private bool PositionInRect(Rect rect, Vector2 position) {
-            return
-                rect.xMin >= position.x && position.x <= rect.xMax
-                && rect.yMin >= position.y && position.y <= rect.yMax
+        void IPointerExitHandler.OnPointerExit(PointerEventData eventData) {
+            _IsWithinRegion = false;
+        }
+
+        private void HandleTouchLikeEvent(PointerEventData eventData) {
+            if (IsTouchLikeEvent(eventData)) {
+                float domainValue = ComputeDomainValue(eventData.position);
+                FireTouchEvents(domainValue);
+            }
+        }
+
+        private bool IsTouchLikeEvent(PointerEventData eventData) {
+            return eventData.pointerId >= POINTER_TOUCH_MIN
+                || (eventData.pointerId == POINTER_MOUSE && EnableMouseToSimulateTouch)
                 ;
-        }
-
-        private string DescribeLocal() {
-            Vector3[] corners = new Vector3[4];
-            _TouchRect.GetLocalCorners(corners);
-            string description = string.Format(
-                "Rect Local Points: BL:{0},{1} TL:{2},{3} TR:{4},{5} BR:{6},{7}",
-                corners[0].x, corners[0].y,
-                corners[1].x, corners[1].y,
-                corners[2].x, corners[2].y,
-                corners[3].x, corners[3].y
-            );
-            return description;
-        }
-
-        private string DescribeWorld() {
-            Vector3[] corners = new Vector3[4];
-            _TouchRect.GetWorldCorners(corners);
-            string description = string.Format(
-                "Rect Local Points: BL:{0},{1} TL:{2},{3} TR:{4},{5} BR:{6},{7}",
-                corners[0].x, corners[0].y,
-                corners[1].x, corners[1].y,
-                corners[2].x, corners[2].y,
-                corners[3].x, corners[3].y
-            );
-            return description;
-        }
-
-        private float DomainValueFor(Touch aTouch) {
-            Vector2 rectanglePos;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_TouchRect, aTouch.position, TouchCamera, out rectanglePos);
-            float axisValue = ComputeAxisValue(rectanglePos);
-            UiDebug.Log("Touch at local {0} -> {1}", aTouch.position, (axisValue / AxisRange) );
-            return axisValue / AxisRange;
         }
 
         private float ComputeDomainValue(Vector2 rectanglePos) {
@@ -169,20 +113,6 @@ namespace Actor.Inputs {
             get { return TouchDirection == Direction.Horizontal ? _TouchRect.rect.width : _TouchRect.rect.height; }
         }
 
-        private IEnumerable<Touch> FindRelevantTouches() {
-            return Input.touches.Where(tch =>
-               tch.phase != TouchPhase.Ended
-               && tch.phase != TouchPhase.Canceled
-               && IsInRegion(tch)
-            );
-        }
-
-        private bool IsInRegion(Touch touch) {
-            bool result = _ScreenRect.Contains(touch.position);
-            UiDebug.Log("touch in Region? {0}", result);
-            return result;
-        }
-
         private void SetupRegion() {
             _TouchRegion = GetComponent<Image>();
             _TouchRect = GetComponent<RectTransform>();
@@ -192,13 +122,7 @@ namespace Actor.Inputs {
                 _ScreenRect = ConvertImageRectTransformToRect();
                 UiDebug.Log("Touch Region: {0}",_ScreenRect );
             }
-            Debug.LogWarningFormat("Region Info:\n"
-                + "- Local {0} \n"
-                + "- World {1} \n",
-                DescribeLocal(),
-                _ScreenRect
-                //DescribeWorld()
-            );
+            _IsWithinRegion = false;
         }
 
         private Rect ConvertImageRectTransformToRect() {
@@ -217,18 +141,6 @@ namespace Actor.Inputs {
                 TopLeft.x, TopLeft.y,
                 width, height
             );
-            //float x, y;
-            //x = _TouchRect.position.x + _TouchRect.rect.x;
-            //y = _TouchRect.position.y + _TouchRect.rect.y;
-
-            //Vector3 worldBottomLeft = new Vector3(x, y);
-            //Vector3 worldTopRight = new Vector3(_TouchRect.rect.width + x, _TouchRect.rect.height + y);
-            //Vector3 screenBottomLeft = TouchCamera.WorldToScreenPoint(worldBottomLeft);
-            //Vector3 screenTopRight = TouchCamera.WorldToScreenPoint(worldTopRight);
-            //float width, height;
-            //width = screenTopRight.x - screenBottomLeft.x;
-            //height = screenTopRight.y - screenBottomLeft.y;
-            //return new Rect(screenBottomLeft.x, screenBottomLeft.y, width, height);
         }
 
     }

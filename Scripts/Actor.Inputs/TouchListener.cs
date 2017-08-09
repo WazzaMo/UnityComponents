@@ -19,6 +19,7 @@ namespace Actor.Inputs {
 
         public void TouchEvent(float domainValue) {
             UiDebug.Log("TouchEvent [{0}]", domainValue);
+            Debug.LogFormat("TouchEvent [{0}]", domainValue);
         }
     }
 
