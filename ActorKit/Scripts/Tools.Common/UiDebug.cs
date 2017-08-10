@@ -7,6 +7,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,6 +30,7 @@ namespace Tools.Common {
         }
 
         private Text _DebugTextBox;
+        private string[] _TextLines = new string[10];
 
         void Awake() {
             _DebugTextBox = GetComponent<Text>();
@@ -39,8 +41,28 @@ namespace Tools.Common {
 
         private void ShowLine(string message) {
             if (IsReady) {
-                _DebugTextBox.text = message + "\n" + _DebugTextBox.text;
+                ShiftLinesDown();
+                SetNewRowZero(message);
+                _DebugTextBox.text = GetConcatenatedRows();
             }
+        }
+
+        private void ShiftLinesDown() {
+            for(int row = 1; row < _TextLines.Length; row++) {
+                _TextLines[row] = _TextLines[row - 1];
+            }
+        }
+
+        private void SetNewRowZero(string message) {
+            _TextLines[0] = message.TrimEnd();
+        }
+
+        private string GetConcatenatedRows() {
+            StringBuilder builder = new StringBuilder();
+            for(int row  = 0; row < _TextLines.Length; row++) {
+                builder.AppendLine(_TextLines[row]);
+            }
+            return builder.ToString();
         }
     }
 
