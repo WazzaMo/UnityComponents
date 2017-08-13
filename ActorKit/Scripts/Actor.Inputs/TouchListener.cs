@@ -17,7 +17,7 @@ namespace Actor.Inputs {
         void Start() {
         }
 
-        public void TouchEvent(float domainValue) {
+        public virtual void TouchEvent(float domainValue) {
             UiDebug.Log("TouchEvent [{0}]", domainValue);
             Debug.LogFormat("TouchEvent [{0}]", domainValue);
         }

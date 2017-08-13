@@ -22,6 +22,10 @@ namespace Actor.Common {
             SetupAttachedGameObjectAsSpawnPoint();
         }
 
+        public void TriggerSpawn() {
+            SpawnCharacter();
+        }
+
         public GameObject SpawnCharacter() {
             GameObject CharacterInWorld = MakeMainCharacter();
             Transform CharacterTransform = CharacterInWorld.GetComponent<Transform>();

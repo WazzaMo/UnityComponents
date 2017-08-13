@@ -32,7 +32,7 @@ namespace Actor.Inputs {
 
         [SerializeField] private bool EnableMouseToSimulateTouch = false;
         [SerializeField] private Direction TouchDirection = Direction.Horizontal;
-        [SerializeField] private TouchListener[] TouchEventListeners = new TouchListener[0];
+        [SerializeField] private TouchRegionEvent TouchEventListeners;
         [SerializeField] private Camera TouchCamera;
 
         private Image _TouchRegion;
@@ -47,16 +47,15 @@ namespace Actor.Inputs {
         public bool IsReady {
             get {
                 return _TouchRegion != null && _TouchRect != null
-                && TouchEventListeners != null && TouchEventListeners.Length > 0
-                && TouchCamera != null
-                ;
+                    && TouchEventListeners.GetPersistentEventCount() > 0
+                    && TouchCamera != null
+                    ;
             }
         }
 
         private void FireTouchEvents(float domainValue) {
-            foreach (var listener in TouchEventListeners) {
-                listener.TouchEvent(domainValue);
-            }
+            TouchEventListeners.Invoke(domainValue);
+            UiDebug.Log("Fire event {0}", domainValue);
         }
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData) {
