@@ -78,10 +78,19 @@ namespace Actor.Inputs {
         }
 
         private void HandleTouchLikeEvent(PointerEventData eventData) {
-            if (IsTouchLikeEvent(eventData)) {
-                float domainValue = ComputeDomainValue(eventData.position);
-                FireTouchEvents(domainValue);
+            SetupScreenRect();
+            FireTouchEvents(TouchDomainValue(eventData));
+        }
+
+        private float TouchDomainValue(PointerEventData pointerData) {
+            Vector2 screenPos = pointerData.pointerPressRaycast.screenPosition;
+            if (TouchDirection == Direction.Horizontal) {
+                return (screenPos.x - _ScreenRect.xMin) / _ScreenRect.width;
             }
+            if (TouchDirection == Direction.Vertical) {
+                return (screenPos.y - _ScreenRect.yMin) / _ScreenRect.height;
+            }
+            return 0.0f;
         }
 
         private bool IsTouchLikeEvent(PointerEventData eventData) {
@@ -90,56 +99,28 @@ namespace Actor.Inputs {
                 ;
         }
 
-        private float ComputeDomainValue(Vector2 rectanglePos) {
-            float axisValue = 0f;
-
-            if (TouchDirection == Direction.Horizontal) {
-                axisValue =(rectanglePos.x - AxisRangeZeroX) / AxisRange;
-            } else {
-                axisValue = 1 + ((rectanglePos.y - AxisRangeZeroY) / AxisRange);
-            }
-            return axisValue;
-        }
-
-        private float AxisRangeZeroX { get { return _ScreenRect.x; } }
-        private float AxisRangeZeroY { get { return _ScreenRect.y; } }
-
-        private float ComputeAxisValue(Vector2 rectanglePos) {
-            return TouchDirection == Direction.Horizontal ? rectanglePos.x : rectanglePos.y;
-        }
-
-        private float AxisRange {
-            get { return TouchDirection == Direction.Horizontal ? _TouchRect.rect.width : _TouchRect.rect.height; }
-        }
-
         private void SetupRegion() {
             _TouchRegion = GetComponent<Image>();
             _TouchRect = GetComponent<RectTransform>();
-            if (! IsReady ) {
-                UiDebug.Log("GameObject {0} needs UnityEngine.UI Image, RectTransform and values for TouchListeners and the Camera.");
-            } else {
-                _ScreenRect = ConvertImageRectTransformToRect();
-                UiDebug.Log("Touch Region: {0}",_ScreenRect );
-            }
             _IsWithinRegion = false;
         }
 
-        private Rect ConvertImageRectTransformToRect() {
-            Vector3[] WorldCorners = new Vector3[4];
-            Vector2 BtmLeft, TopLeft, TopRight;
+        private Rect GetPixelRect() {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Rect pixels = default(Rect);
+            if (canvas != null) {
+                pixels = RectTransformUtility.PixelAdjustRect(_TouchRect, canvas);
+            } else {
+                Debug.Log("Couldn't find canvas! ?");
+            }
+            return pixels;
+        }
 
-            _TouchRect.GetWorldCorners(WorldCorners);
-            BtmLeft = WorldCorners[0] ;
-            TopLeft = WorldCorners[1] ;
-            TopRight = WorldCorners[2] ;
-
-            float width = TopRight.x - TopLeft.x;
-            float height = TopLeft.y - BtmLeft.y;
-            
-            return new Rect(
-                TopLeft.x, TopLeft.y,
-                width, height
-            );
+        private void SetupScreenRect() {
+            Rect pixels = GetPixelRect();
+            float xLeft = _TouchRect.position.x + pixels.xMin;
+            float yBottom = _TouchRect.position.y + pixels.yMin;
+            _ScreenRect = new Rect(xLeft, yBottom, pixels.width, pixels.height);
         }
 
     }

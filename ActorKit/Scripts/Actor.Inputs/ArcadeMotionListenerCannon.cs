@@ -16,8 +16,6 @@ namespace Actor.Inputs {
     [RequireComponent(typeof(Rigidbody))]
     public class ArcadeMotionListenerCannon : MonoBehaviour {
 
-        [SerializeField] private float ForceFactor = 100f;
-
         private Rigidbody _RigidBody;
 
         void Start() {
