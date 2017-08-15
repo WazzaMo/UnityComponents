@@ -78,8 +78,10 @@ namespace Actor.Inputs {
         }
 
         private void HandleTouchLikeEvent(PointerEventData eventData) {
-            SetupScreenRect();
-            FireTouchEvents(TouchDomainValue(eventData));
+            if (IsTouchLikeEvent(eventData)) {
+                SetupScreenRect();
+                FireTouchEvents(TouchDomainValue(eventData));
+            }
         }
 
         private float TouchDomainValue(PointerEventData pointerData) {
