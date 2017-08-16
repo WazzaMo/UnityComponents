@@ -55,7 +55,7 @@ namespace Actor.Inputs {
 
         private void FireTouchEvents(float domainValue) {
             TouchEventListeners.Invoke(domainValue);
-            UiDebug.Log("Fire event {0}", domainValue);
+            
         }
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData) {
