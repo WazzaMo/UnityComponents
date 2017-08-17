@@ -11,10 +11,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using System;
-using System.Linq;
 
-using Tools.Common;
+using Actor.Events;
 
 namespace Actor.Inputs {
 
@@ -35,7 +33,7 @@ namespace Actor.Inputs {
 
         [SerializeField] private bool EnableMouseToSimulateTouch = false;
         [SerializeField] private Direction TouchDirection = Direction.Horizontal;
-        [SerializeField] private TouchRegionEvent TouchEventListeners;
+        [SerializeField] private RelativeInputEvent TouchEventListeners;
         [SerializeField] private Camera TouchCamera;
 
         private Image _TouchRegion;
