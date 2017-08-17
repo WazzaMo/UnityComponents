@@ -18,6 +18,7 @@ namespace Actor.Relative {
 
         [SerializeField] private WayPoint[] WayPointNodes = new WayPoint[0];
         [SerializeField] private bool IsTrackVisible = false;
+        [SerializeField] Material MaterialForVisibleTrack;
 
         private Vector3[] _NodePositions;
         private float _TotalLength;
@@ -138,7 +139,7 @@ namespace Actor.Relative {
 
         private void SetupLineRenderer() {
             _LineRenderer = gameObject.AddComponent<LineRenderer>();
-            _LineRenderer.material = new Material(Shader.Find("Particles/Additive"));
+            _LineRenderer.material = MaterialForVisibleTrack;
             _LineRenderer.widthMultiplier = 0.2f;
             UpdatePointsToLineRenderer();
         }

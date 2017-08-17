@@ -20,7 +20,10 @@ namespace Actor.Inputs {
 
     [RequireComponent(typeof(Image))]
     [RequireComponent(typeof(RectTransform))]
-    public class TouchRegion : MonoBehaviour, IPointerEnterHandler,IPointerClickHandler, IDragHandler, IPointerExitHandler {
+    public class TouchRegion : MonoBehaviour,
+            IPointerEnterHandler,IPointerClickHandler, IBeginDragHandler,
+            IDragHandler, IEndDragHandler, IPointerExitHandler
+    {
         public enum Direction {
             Vertical,
             Horizontal
@@ -67,7 +70,19 @@ namespace Actor.Inputs {
             HandleTouchLikeEvent(eventData);
         }
 
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData) {
+            if (_IsWithinRegion) {
+                HandleTouchLikeEvent(eventData);
+            }
+        }
+
         void IDragHandler.OnDrag(PointerEventData eventData) {
+            if (_IsWithinRegion) {
+                HandleTouchLikeEvent(eventData);
+            }
+        }
+
+        void IEndDragHandler.OnEndDrag(PointerEventData eventData) {
             if (_IsWithinRegion) {
                 HandleTouchLikeEvent(eventData);
             }
@@ -85,7 +100,7 @@ namespace Actor.Inputs {
         }
 
         private float TouchDomainValue(PointerEventData pointerData) {
-            Vector2 screenPos = pointerData.pointerPressRaycast.screenPosition;
+            Vector2 screenPos = GetScreenPosFromPointerEventData(pointerData);
             if (TouchDirection == Direction.Horizontal) {
                 return (screenPos.x - _ScreenRect.xMin) / _ScreenRect.width;
             }
@@ -93,6 +108,10 @@ namespace Actor.Inputs {
                 return (screenPos.y - _ScreenRect.yMin) / _ScreenRect.height;
             }
             return 0.0f;
+        }
+
+        private Vector2 GetScreenPosFromPointerEventData(PointerEventData pointerData) {
+            return pointerData.pointerCurrentRaycast.screenPosition;
         }
 
         private bool IsTouchLikeEvent(PointerEventData eventData) {
