@@ -14,12 +14,11 @@ using Tools.Common;
 namespace Actor.Inputs {
 
     public class TouchListener : MonoBehaviour {
-        void Start() {
-        }
 
-        public virtual void TouchEvent(float domainValue) {
-            UiDebug.Log("TouchEvent [{0}]", domainValue);
-            Debug.LogFormat("TouchEvent [{0}]", domainValue);
+        public void TouchEvent(float domainValue) {
+            string message = string.Format("GameObject '{0}' Touch Event [{1}]", name, domainValue);
+            UiDebug.Log(message);
+            Debug.Log(message);
         }
     }
 
