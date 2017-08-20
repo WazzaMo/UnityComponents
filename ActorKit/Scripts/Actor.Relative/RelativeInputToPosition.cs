@@ -11,8 +11,8 @@ using UnityEngine;
 
 namespace Actor.Relative {
 
-    public interface IRelativeInputToPosition {
-        Vector3 GetPoint(float PortionFromFirstToSecond);
+    public abstract class RelativeInputToPosition : MonoBehaviour {
+        public abstract Vector3 GetPointFromRelativeInput(float RelativeInput);
     }
 
 }

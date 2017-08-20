@@ -1,5 +1,5 @@
 ﻿/*
- * WayPointTrack Unity Component
+ * AutoWayPointTrack Unity Component
  * (c) Copyright 2017, Warwick Molloy
  * GitHub repo WazzaMo/UnityComponents
  * Provided under the terms of the MIT License.
@@ -13,11 +13,8 @@ using UnityEngine.Events;
 
 namespace Actor.Relative {
 
-    public class WayPointTrack : BasePointTrack {
-
-        [SerializeField] private WayPoint[] WayPointNodes = new WayPoint[0];
-
-        public WayPoint[] Points { get { return WayPointNodes; } }
+    public class AutoWayPointTrack : BasePointTrack {
+        public class PositionOnTrackEvent : UnityEvent<Vector3> { };
 
         void Start() {
             Setup();
@@ -32,15 +29,24 @@ namespace Actor.Relative {
             }
         }
 
-        public new bool IsReady { get { return WayPointNodes != null && WayPointNodes.Length > 2 && base.IsReady; } }
+        public new bool IsReady { get { return base.IsReady; } }
+
 
         private void Setup() {
-            SetWayPointNodes(WayPointNodes);
+            GetAllChildrenWithWayPointComponents();
             if (IsReady) {
                 ConfigureWayPointNodes();
+            } else {
+                Debug.LogWarningFormat(
+                    "GameObject {0} needs many child objects with a WayPoint component",
+                    name
+                );
             }
         }
 
-   }
+        private void GetAllChildrenWithWayPointComponents() {
+            SetWayPointNodes( GetComponentsInChildren<WayPoint>() );
+        }
+    }
 
 }

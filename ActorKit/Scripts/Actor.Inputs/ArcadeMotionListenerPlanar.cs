@@ -31,7 +31,6 @@ namespace Actor.Inputs {
             Vector3 forceVector = Vector3.zero;
             forceVector.x = ForceFactor * DownVector.x;
             forceVector.z = -1 * ForceFactor * DownVector.z;
-            UiDebug.Log("Applying force to object {0}", forceVector);
             ApplyForce(forceVector);
         }
 

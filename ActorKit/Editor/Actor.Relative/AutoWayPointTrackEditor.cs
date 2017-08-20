@@ -1,5 +1,5 @@
 ﻿/*
- * WayPointTrackEditor Unity Component
+ * AutoWayPointTrackEditor Unity Component
  * (c) Copyright 2017, Warwick Molloy
  * GitHub repo WazzaMo/UnityComponents
  * Provided under the terms of the MIT License.
@@ -15,20 +15,23 @@ using UnityEditor;
 
 namespace Actor.Relative {
 
-    [CustomEditor(typeof(WayPointTrack))]
-    public class WayPointTrackEditor : Editor {
+    [CustomEditor(typeof(AutoWayPointTrack))]
+    public class AutoWayPointTrackEditor : Editor {
 
         public void OnSceneGUI() {
-            WayPoint[] wayPoints = GetPoints();
+            WayPoint[] wayPoints = GetWayPoints();
             if (wayPoints != null && wayPoints.Length > 0) {
-                Vector3[] points = GetPositionsOfPoints(wayPoints);
-                Handles.DrawPolyLine(points);
+                BasePointTrack track = target as BasePointTrack;
+                if (track != null) {
+                    Vector3[] points = GetPositionsOfPoints(wayPoints);
+                    Handles.DrawPolyLine(points);
+                }
             }
         }
 
-        private WayPoint[] GetPoints() {
-            WayPointTrack wayTrack = target as WayPointTrack;
-            return wayTrack.Points;
+        private WayPoint[] GetWayPoints() {
+            AutoWayPointTrack autoTrack = target as AutoWayPointTrack;
+            return autoTrack.GetComponentsInChildren<WayPoint>();
         }
 
         private Vector3[] GetPositionsOfPoints(WayPoint[] points) {
