@@ -57,7 +57,7 @@ namespace Actor.Inputs {
         }
 
         private void NotifyNewInput() {
-            float value = Curve.Evaluate(_TimeSeconds);
+            float value = RelativeInputEvent.WithinFullRange( Curve.Evaluate(_TimeSeconds) );
             InputConsumers.Invoke(value);
         }
 

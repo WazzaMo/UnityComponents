@@ -11,7 +11,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Actor.Inputs {
+namespace Actor.Events {
 
     [Serializable]
     public class DeviceMotionEvent : UnityEvent<Vector3> { }

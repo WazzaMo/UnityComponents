@@ -40,6 +40,18 @@ namespace Actor.Relative {
             OnChange += listener;
         }
 
+        private void OnDrawGizmosSelected() {
+            Vector3 size = Vector3.one / 5;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawCube(transform.position, size);
+        }
+
+        private void OnDrawGizmos() {
+            Vector3 size = Vector3.one / 5;
+            Gizmos.color = Color.white;
+            Gizmos.DrawCube(transform.position, size);
+        }
+
         public bool IsReady { get { return _Transform != null; } }
 
         private void NotifyIfChanged() {

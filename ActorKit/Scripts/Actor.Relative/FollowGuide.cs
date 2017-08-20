@@ -17,7 +17,7 @@ namespace Actor.Relative {
 
     public class FollowGuide : MonoBehaviour {
 
-        [SerializeField] WayPointTrack TrackToFollow;
+        [SerializeField] BaseTrack TrackToFollow;
 
         private Transform _Transform;
         private Rigidbody _RigidBody;
@@ -30,10 +30,15 @@ namespace Actor.Relative {
             }
         }
 
+        public BaseTrack PathToFollow {
+            get { return TrackToFollow; }
+            set { TrackToFollow = value; }
+        }
+
         public void PositionEvent(float progressPosition) {
             Vector3 NewPos;
             if (IsReady) {
-                NewPos = TrackToFollow.GetPointOnTrack(progressPosition);
+                NewPos = TrackToFollow.GetPointFromRelativeInput(progressPosition);
                 MoveTo(NewPos);
             }
         }
