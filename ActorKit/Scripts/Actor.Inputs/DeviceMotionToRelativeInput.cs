@@ -43,6 +43,8 @@ namespace Actor.Inputs {
             }
         }
 
+        internal bool HasListeners { get { return HasRollHandler || HasPitchHandler || HasYawHandler; } }
+
         private void HandleRoll(Vector3 towardGravity) {
             float angle = Vector3.SignedAngle(Vector3.down, towardGravity, Vector3.forward);
             float relativeAmount = angle / ANGLE_MAX;
