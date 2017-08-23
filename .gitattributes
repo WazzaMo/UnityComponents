@@ -1,0 +1,7 @@
+
+* text=auto
+
+*.cs text
+
+*.unity binary
+
