@@ -4,4 +4,4 @@
 *.cs text
 
 *.unity binary
-
+*.zip binary
