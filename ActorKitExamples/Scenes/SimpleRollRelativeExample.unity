@@ -456,6 +456,7 @@ MonoBehaviour:
   _Radius: 3.5
   _TrackAngle: 180
   _TrackOrientation: {x: 0, y: -0.707992, z: 0, w: 0.70622045}
+  _FullRange: 0
 --- !u!114 &912722915
 MonoBehaviour:
   m_ObjectHideFlags: 0

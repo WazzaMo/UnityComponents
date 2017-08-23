@@ -11,6 +11,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Actor.Events;
+
 namespace Actor.Relative {
 
     public class CircularTrack : BaseTrack {
@@ -20,29 +22,50 @@ namespace Actor.Relative {
         [SerializeField] float _Radius = 2f;
 
         [Tooltip("Degrees")]
-        [SerializeField] float _TrackAngle = 180f; //degrees
+        [SerializeField] private float _TrackAngle = 180f; //degrees
 
         [SerializeField] private Quaternion _TrackOrientation = Quaternion.identity;
+
+        [Tooltip("Full range is -1..0..+1")]
+        [SerializeField] private bool _FullRange = false;
 
         private Transform _Transform;
 
 
         public float Radius { get { return _Radius; } set { _Radius = value; } }
 
-        public float TrackAngle { get { return _TrackAngle; } set { _TrackAngle = value; } }
+        public float TrackAngle {
+            get { return _FullRange ? _TrackAngle / 2 : _TrackAngle; }
+            set { _TrackAngle = _FullRange ? value * 2 : value; }
+        }
 
         public Quaternion TrackOrientation {
             get { return _TrackOrientation; }
             set { _TrackOrientation = value; }
         }
 
+        public bool FullRange {
+            get { return _FullRange; }
+            set { _FullRange = value; }
+        }
+
 
         public override Vector3 GetPointFromRelativeInput(float relativeInput) {
-            return DeterminePointInSpaceFromRelativeInput(relativeInput);
+            float internalRelative;
+            if (_FullRange) {
+                internalRelative = RelativeInputEvent.WithinFullRange(relativeInput);
+            } else {
+                internalRelative = RelativeInputEvent.WithinPositiveRange(relativeInput);
+            }
+            return DeterminePointInSpaceFromRelativeInput(internalRelative);
         }
 
         public static Vector3 GetZeroInputPoint(CircularTrack track) {
-            return track.Radius * (track.TrackOrientation * Vector3.forward);
+            if (track._FullRange) {
+                return track.Radius * (track.TrackOrientation * Vector3.right);
+            } else {
+                return track.Radius * (track.TrackOrientation * Vector3.forward);
+            }
         }
 
         void Start() {
@@ -64,11 +87,15 @@ namespace Actor.Relative {
         }
 
         private float GetRotationAngleFromRelative(float relativeInput) {
-            return _TrackAngle * relativeInput;
+            if (_FullRange) {
+                return _TrackAngle * relativeInput / 2;
+            } else {
+                return _TrackAngle * relativeInput;
+            }
         }
 
         private Vector3 GetZeroPoint() {
-            return GetZeroInputPoint(this);// _Radius * (_TrackOrientation * Vector3.forward);
+            return GetZeroInputPoint(this);
         }
 
         private Vector3 GetNormalAxis() {
