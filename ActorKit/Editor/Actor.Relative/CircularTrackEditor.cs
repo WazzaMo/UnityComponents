@@ -18,6 +18,7 @@ namespace Actor.Relative {
 
         const float SEMI_ALPHA = 0.2f;
         static readonly Color SemiYellow = new Color(Color.yellow.r, Color.yellow.g, Color.yellow.b, SEMI_ALPHA);
+        static readonly Color SemiOrange = new Color(1.0f, 0.4f, 0f, SEMI_ALPHA);
 
         private CircularTrack _Track;
         private Transform _Transform;
@@ -65,6 +66,10 @@ namespace Actor.Relative {
         private void DrawTrackArc() {
             Handles.color = SemiYellow;
             Handles.DrawSolidArc(Position, Normal, Point, _TrackAngle, _Radius);
+            if (_Track.FullRange) {
+                Handles.color = SemiOrange;
+                Handles.DrawSolidArc(Position, Normal, Point, - _TrackAngle, _Radius);
+            }
         }
     }
 

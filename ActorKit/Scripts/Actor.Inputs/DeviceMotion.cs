@@ -50,23 +50,18 @@ namespace Actor.Inputs {
 
 
         void Start() {
-            if (Input.gyro != null) {
-                UiDebug.Log("Gyro available: {0}", Input.gyro.attitude);
-            } else {
-                UiDebug.Log("No gyro (null)");
-            }
             SetupForRelativeEvents();
             if (UseKeyBoardToSimulateAccelerometer) {
                 SetupKeyboardSim();
             }
+            if (HasListeners) {
+                Debug.Log("DeviceMotion has associated listeners.");
+            } else {
+                Debug.LogWarning("No listeners associated with DeviceMotion.");
+            }
         }
 
         void Update() {
-            if (Input.gyro != null) {
-                UiDebug.Log("Gyro available: {0}", Input.gyro.attitude);
-            } else {
-                UiDebug.Log("No gyro (null)");
-            }
             if ( HasListeners ){
                 Vector3 Direction = GetDeviceOrSimulatedDirectionTowardGravity();
                 NotifyListeners(Direction);
@@ -81,7 +76,7 @@ namespace Actor.Inputs {
         }
 
         private bool HasListeners {
-            get { return ArcadeMotionListeners.GetPersistentEventCount() > 0; }
+            get { return _RelativeInput.HasListeners || ArcadeMotionListeners.GetPersistentEventCount() > 0; }
         }
 
         private Vector3 GetDeviceOrSimulatedDirectionTowardGravity() {
