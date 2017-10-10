@@ -1,5 +1,5 @@
 ﻿/*
- * MovePositionEvent Unity Component
+ * RotationEvent Unity Component
  * (c) Copyright 2017, Warwick Molloy
  * GitHub repo WazzaMo/UnityComponents
  * Provided under the terms of the MIT License.
@@ -12,6 +12,6 @@ using UnityEngine.Events;
 namespace Actor.Events {
 
     [Serializable]
-    public class MovePositionEvent : UnityEvent<Vector3> {}
+    public class RotationEvent : UnityEvent<Quaternion> {}
 
 }

@@ -28,6 +28,8 @@ namespace Actor.Inputs {
         [Tooltip(".\nVector3 pointing to ground")]
         [SerializeField] private DeviceMotionEvent ArcadeMotionListeners;
 
+        [SerializeField] private RotationEvent _RotationListeners;
+
         [Header("For RelativeInputEvent Handlers")]
         [Tooltip("Roll 0 to +1 left; 0 to -1 right")]
         [SerializeField] private RelativeInputEvent RollRelativeListeners;
@@ -38,22 +40,22 @@ namespace Actor.Inputs {
         [Tooltip("Yaw (unreliable) 0 to +1 turn right; 0 to -1 left")]
         [SerializeField] private RelativeInputEvent YawRelativeListeners;
 
-        [SerializeField] private Vector3 SensitivityFactor = Vector3.one;
 
         [Header("Editor Simulation")]
         [Tooltip("Use Z,X and Arrow keys?")]
         [SerializeField] private bool UseKeyBoardToSimulateAccelerometer = true;
 
-        [SerializeField] private DeviceMotionKeyboardSim _MotionSimulator = null;
+        [SerializeField] private DeviceMotionKeyboardSim _MotionSimulator = new DeviceMotionKeyboardSim();
+        [SerializeField] private DeviceMotionSourceAccelGyro _MobileMotion = new DeviceMotionSourceAccelGyro();
+
+        public RotationEvent RotationListeners { get { return _RotationListeners; } }
 
         private DeviceMotionToRelativeInput _RelativeInput;
 
 
         void Start() {
             SetupForRelativeEvents();
-            if (UseKeyBoardToSimulateAccelerometer) {
-                SetupKeyboardSim();
-            }
+            SetupMotionSources();
             if (HasListeners) {
                 Debug.Log("DeviceMotion has associated listeners.");
             } else {
@@ -63,15 +65,15 @@ namespace Actor.Inputs {
 
         void Update() {
             if ( HasListeners ){
-                Vector3 Direction = GetDeviceOrSimulatedDirectionTowardGravity();
-                NotifyListeners(Direction);
+                Vector3 Direction = GetDeviceDirectionTowardGravity();
+                NotifyArcadeListeners(Direction);
                 if (_RelativeInput != null) {
                     _RelativeInput.NotifyDirection(Direction);
                 }
             }
         }
 
-        private void NotifyListeners(Vector3 Direction) {
+        private void NotifyArcadeListeners(Vector3 Direction) {
             ArcadeMotionListeners.Invoke(Direction);
         }
 
@@ -79,52 +81,31 @@ namespace Actor.Inputs {
             get { return _RelativeInput.HasListeners || ArcadeMotionListeners.GetPersistentEventCount() > 0; }
         }
 
-        private Vector3 GetDeviceOrSimulatedDirectionTowardGravity() {
-            if (IsDesktop() && UseKeyBoardToSimulateAccelerometer) {
-                return GetSimulatedDirectionTowardGravity();
-            } else {
-                return GetDeviceDirectionTowardGravity();
-            }
-        }
-
-        private bool IsDesktop() {
-            return
-                Application.platform == RuntimePlatform.OSXEditor
-                || Application.platform == RuntimePlatform.OSXPlayer
-                || Application.platform == RuntimePlatform.WindowsEditor
-                || Application.platform == RuntimePlatform.WindowsPlayer
-                || Application.platform == RuntimePlatform.LinuxEditor
-                || Application.platform == RuntimePlatform.LinuxPlayer
-                ;
-        }
 
         private Vector3 GetDeviceDirectionTowardGravity() {
-            AccelerationEvent accelEvent;
-            Vector3 sumRotations = Vector3.zero;
-            Vector3 direction;
-
-            for (int index = 0; index < Input.accelerationEventCount; index++) {
-                accelEvent = Input.accelerationEvents[index];
-                sumRotations += accelEvent.deltaTime * accelEvent.acceleration;
-            }
-            direction.y = sumRotations.y * SensitivityFactor.y;
-            direction.x = sumRotations.x * SensitivityFactor.x;
-            direction.z = sumRotations.z * SensitivityFactor.z;
-            direction.Normalize();
-            return direction;
-        }
-
-        private Vector3 GetSimulatedDirectionTowardGravity() {
-            if (_MotionSimulator != null) {
-                _MotionSimulator.SimulateAccelerometer();
-                return _MotionSimulator.GetSimulatedDirectionTowardGravity();
+            Debug.LogFormat("UseKB? {0} _MoSim.HW? {1}", UseKeyBoardToSimulateAccelerometer, _MotionSimulator.IsHardwareAvailable);
+            if (UseKeyBoardToSimulateAccelerometer && _MotionSimulator.IsHardwareAvailable) {
+                Vector3 v = _MotionSimulator.GetDeviceDirectionTowardGravity();
+                Debug.LogFormat("New direction {0}", v);
+                return v;
             } else {
-                return Vector3.zero;
+                return _MobileMotion.GetDeviceDirectionTowardGravity();
             }
         }
 
-        private void SetupKeyboardSim() {
-            _MotionSimulator = new DeviceMotionKeyboardSim();
+        private void SetupMotionSources() {
+            SetupDeviceIfConfigured(_MotionSimulator);
+            SetupDeviceIfConfigured(_MobileMotion);
+        }
+
+        private void SetupDeviceIfConfigured(IDeviceMotionSource device) {
+            if (device.IsHardwareAvailable) {
+                if (device.IsConfiguredCorrectly) {
+                    device.SetupSource();
+                } else {
+                    Debug.LogWarning(device.GetType().Name + ":" + device.GetConfigurationMessage());
+                }
+            }
         }
 
         private void SetupForRelativeEvents() {

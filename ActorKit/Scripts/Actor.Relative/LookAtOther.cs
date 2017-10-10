@@ -13,7 +13,7 @@ using UnityEngine;
 namespace Actor.Relative {
 
     public class LookAtOther : MonoBehaviour {
-        [SerializeField] GameObject Other;
+        [SerializeField] GameObject Other = null;
 
         void Start() {
             Setup();

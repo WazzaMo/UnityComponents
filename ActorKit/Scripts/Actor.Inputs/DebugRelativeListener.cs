@@ -1,5 +1,5 @@
 ﻿/*
- * DeviceMotionListener Unity Component
+ * DebugRelativeListener Unity Component
  * (c) Copyright 2017, Warwick Molloy
  * GitHub repo WazzaMo/UnityComponents
  * Provided under the terms of the MIT License.
@@ -17,9 +17,9 @@ using Tools.Common;
 namespace Actor.Inputs {
 
 
-    public class DeviceMotionListener : MonoBehaviour {
-        public void MotionUpdateWithDownDirection(Vector3 DownDirection) {
-            UiDebug.Log("New downward direction {0}", DownDirection);
+    public class DebugRelativeListener : MonoBehaviour {
+        public void RelativeInputEvent(float value) {
+            UiDebug.Log("Debug Relative Input: {0}", value);
         }
     }
 

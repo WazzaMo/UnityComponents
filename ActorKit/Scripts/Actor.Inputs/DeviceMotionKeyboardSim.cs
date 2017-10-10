@@ -13,7 +13,7 @@ using UnityEngine;
 namespace Actor.Inputs {
 
     [Serializable]
-    public class DeviceMotionKeyboardSim {
+    public class DeviceMotionKeyboardSim : IDeviceMotionSource {
 
         public KeyCode
             ROLL_CLOCK = KeyCode.RightArrow,
@@ -34,18 +34,35 @@ namespace Actor.Inputs {
         private float _PitchAngle;
         private float _YawAngle;
 
+        public bool IsHardwareAvailable { get { return IsDesktop(); } }
+
+        public bool IsConfiguredCorrectly { get { return true; } }
+
+        public void SetupSource() {
+            ResetAllState();
+        }
+
+        public string GetConfigurationMessage() {
+            if (IsConfiguredCorrectly) {
+                return "";
+            } else {
+                return "";
+            }
+        }
+
+        public Vector3 GetDeviceDirectionTowardGravity() {
+            SimulateAccelerometer();
+            return _Direction;
+        }
+
         internal DeviceMotionKeyboardSim() {
             ResetAllState();
         }
 
-        internal void SimulateAccelerometer() {
+        private void SimulateAccelerometer() {
             CheckResetKey();
             UpdateAngles();
             UpdateOrientation();
-        }
-
-        internal Vector3 GetSimulatedDirectionTowardGravity() {
-            return _Direction;
         }
 
         private void UpdateAngles() {
@@ -96,6 +113,17 @@ namespace Actor.Inputs {
             _RollAngle = 0;
             _PitchAngle = 0;
             _YawAngle = 0;
+        }
+
+        private bool IsDesktop() {
+            return
+                Application.platform == RuntimePlatform.OSXEditor
+                || Application.platform == RuntimePlatform.OSXPlayer
+                || Application.platform == RuntimePlatform.WindowsEditor
+                || Application.platform == RuntimePlatform.WindowsPlayer
+                || Application.platform == RuntimePlatform.LinuxEditor
+                || Application.platform == RuntimePlatform.LinuxPlayer
+                ;
         }
     }
 

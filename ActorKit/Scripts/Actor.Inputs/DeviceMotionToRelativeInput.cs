@@ -36,9 +36,11 @@ namespace Actor.Inputs {
                 HandleRoll(towardGravity);
             }
             if (HasPitchHandler) {
+                Debug.LogFormat("Pitch {0}", towardGravity);
                 HandlePitch(towardGravity);
             }
             if (HasYawHandler) {
+                Debug.LogFormat("Yaw {0}", towardGravity);
                 HandleYaw(towardGravity);
             }
         }
