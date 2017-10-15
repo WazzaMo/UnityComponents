@@ -368,7 +368,6 @@ GameObject:
   - component: {fileID: 510562335}
   - component: {fileID: 510562334}
   - component: {fileID: 510562333}
-  - component: {fileID: 510562332}
   - component: {fileID: 510562338}
   - component: {fileID: 510562337}
   m_Layer: 5
@@ -378,48 +377,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &510562332
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 510562331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a100f6f6af7ae648a3d7821dee906d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ArcadeMotionListeners:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: Actor.Events.DeviceMotionEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  RollRelativeListeners:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: Actor.Events.RelativeInputEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  PitchRelativeListeners:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: Actor.Events.RelativeInputEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  YawRelativeListeners:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: Actor.Events.RelativeInputEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  SensitivityFactor: {x: 1, y: 1, z: 1}
-  UseKeyBoardToSimulateAccelerometer: 1
-  _MotionSimulator:
-    ROLL_CLOCK: 275
-    ROLL_ANTI: 276
-    PITCH_CLOCK: 273
-    PITCH_ANTI: 274
-    YAW_CLOCK: 122
-    YAW_ANTI: 120
-    RESET: 32
-    Increment: 5
 --- !u!23 &510562333
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -763,7 +720,6 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: Actor.Events.RelativeInputEvent, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  SensitivityFactor: {x: 1, y: 1, z: 1}
   UseKeyBoardToSimulateAccelerometer: 1
   _MotionSimulator:
     ROLL_CLOCK: 275
