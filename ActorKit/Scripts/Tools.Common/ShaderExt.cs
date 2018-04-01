@@ -34,5 +34,14 @@ namespace Tools.Common {
             }
             return null;
         }
+
+        public static Material MakeMaterial(this Shader shader, bool isReady = true, string DebugInfo = "ShaderExt") {
+            if (isReady && shader != null) {
+                return new Material(shader);
+            } else {
+                Logging.Warning("{0}: Material could not be created.", DebugInfo);
+                return null;
+            }
+        }
     }
 }
