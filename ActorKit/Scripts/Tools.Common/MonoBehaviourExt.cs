@@ -117,6 +117,19 @@ namespace Tools.Common {
             return allOthers;
         }
 
+        public static Mesh GetMeshOrWarn(this MonoBehaviour behaviour, ref bool isReady) {
+            if (isReady) {
+                var meshRenderer = behaviour.GetComponentOrWarn<MeshFilter>();
+                if (meshRenderer != null) {
+                    return meshRenderer.sharedMesh;
+                } else {
+                    Logging.Warning("{0}: No mesh filter and (thus) no mesh attached.", behaviour.name);
+                }
+            }
+            isReady = false;
+            return null;
+        }
+
         private static bool CheckEditorValueForNull(MonoBehaviour component, FieldInfo[] publicFields, UnityEngine.Object editorValue, int index) {
             if (editorValue == null) {
                 if (publicFields != null && publicFields.Length > index) {

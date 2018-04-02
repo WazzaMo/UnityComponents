@@ -42,6 +42,19 @@ namespace Tools.Common {
                 return gameObject.name;
             }
         }
+
+        public static Mesh GetMeshOrWarn(this GameObject gameObject, ref bool isReady) {
+            if (isReady) {
+                var meshRenderer = gameObject.GetComponentOrWarn<MeshFilter>();
+                if (meshRenderer != null) {
+                    return meshRenderer.sharedMesh;
+                } else {
+                    Logging.Warning("{0}: No mesh filter and (thus) no mesh attached.", gameObject.name);
+                }
+            }
+            isReady = false;
+            return null;
+        }
     }
 
 }

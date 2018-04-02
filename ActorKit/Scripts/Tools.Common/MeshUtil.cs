@@ -18,11 +18,32 @@ namespace Tools.Common {
         private Mesh _Mesh;
         private Vector3 _Smallest;
         private Vector3 _Largest;
+        private Vector3 _Scale;
 
+        public float MinX { get { return _Smallest.x * _Scale.x; } }
+        public float MaxX { get { return _Largest.x * _Scale.x; } }
+        public float MinY { get { return _Smallest.y * _Scale.y; } }
+        public float MaxY { get { return _Largest.y * _Scale.y; } }
+        public float MinZ { get { return _Smallest.z * _Scale.z; } }
+        public float MaxZ { get { return _Largest.z * _Scale.z; } }
 
-        public MeshUtil(Mesh mesh) {
+        public float Width { get { return MaxX - MinX; } }
+        public float Height { get { return MaxY - MinY; } }
+        public float Depth { get { return MaxZ - MinZ; } }
+
+        public MeshUtil(Mesh mesh, Transform transform) {
             _Mesh = mesh;
+            _Scale = transform.localScale;
             AnalyseMesh();
+        }
+
+        public MeshUtil(GameObject gameObject, ref bool isReady) {
+            SetupWithGameObject(gameObject, ref isReady);
+        }
+
+        public MeshUtil(GameObject gameObject) {
+            bool isReady = true;
+            SetupWithGameObject(gameObject, ref isReady);
         }
 
         public bool IsInVolume(Transform transform, Vector3 point, out Vector3 volumetricPos) {
@@ -48,6 +69,22 @@ namespace Tools.Common {
             planarPos = new Vector2(x, z);
             return (x >= 0f && x <= 1.0f)
                 && (z >= 0f && z <= 1.0f);
+        }
+
+        private void SetupWithGameObject(GameObject gameObject, ref bool isReady) {
+            if (isReady) {
+                _Mesh = gameObject.GetMeshOrWarn(ref isReady);
+                _Scale = gameObject.transform.localScale;
+                AnalyseMesh();
+            } else {
+                MakeEmpty();
+            }
+        }
+
+        private void MakeEmpty() {
+            _Smallest = Vector3.zero;
+            _Largest = Vector3.zero;
+            _Scale = Vector3.one;
         }
 
         private Vector3 GetPoint(Transform transform, Vector3 point) {
