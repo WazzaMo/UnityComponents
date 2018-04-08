@@ -20,21 +20,11 @@ namespace Tools.Common {
         private Vector3 _Largest;
         private Vector3 _Scale;
 
-        public float MinX { get { return _Smallest.x * _Scale.x; } }
-        public float MaxX { get { return _Largest.x * _Scale.x; } }
-        public float MinY { get { return _Smallest.y * _Scale.y; } }
-        public float MaxY { get { return _Largest.y * _Scale.y; } }
-        public float MinZ { get { return _Smallest.z * _Scale.z; } }
-        public float MaxZ { get { return _Largest.z * _Scale.z; } }
-
-        public float Width { get { return MaxX - MinX; } }
-        public float Height { get { return MaxY - MinY; } }
-        public float Depth { get { return MaxZ - MinZ; } }
+        public MeshDimensions WorldScaleDimensions { get; private set; }
+        public MeshDimensions UnscaledDimensions { get; private set; }
 
         public MeshUtil(Mesh mesh, Transform transform) {
-            _Mesh = mesh;
-            _Scale = transform.localScale;
-            AnalyseMesh();
+            SetupWithMeshAndTransform(mesh, transform);
         }
 
         public MeshUtil(GameObject gameObject, ref bool isReady) {
@@ -73,12 +63,28 @@ namespace Tools.Common {
 
         private void SetupWithGameObject(GameObject gameObject, ref bool isReady) {
             if (isReady) {
-                _Mesh = gameObject.GetMeshOrWarn(ref isReady);
-                _Scale = gameObject.transform.localScale;
-                AnalyseMesh();
+                var mesh = gameObject.GetMeshOrWarn(ref isReady);
+                var _transform = gameObject.transform;
+                SetupWithMeshAndTransform(mesh, _transform);
             } else {
                 MakeEmpty();
             }
+        }
+
+        private void SetupWithMeshAndTransform(Mesh mesh, Transform _Transform) {
+            _Mesh = mesh;
+            var OnePoint = new Vector3(1, 1, 1);
+            var scaledOne = _Transform.TransformPoint(OnePoint);
+            Logging.Log("{0}: ScaleOne = {1}", typeof(MeshUtil).Name, scaledOne);
+            //_Scale = _Transform.localScale;
+            _Scale = scaledOne;
+            AnalyseMeshToGetExtentsInAllAxes();
+            CalculateMinAndMax();
+            Logging.Log("{0}: Scale of {1} = {2}",
+                typeof(MeshUtil).Name,
+                _Transform.gameObject.name,
+                _Scale
+            );
         }
 
         private void MakeEmpty() {
@@ -91,7 +97,7 @@ namespace Tools.Common {
             return transform.worldToLocalMatrix.MultiplyPoint(point);
         }
 
-        private void AnalyseMesh() {
+        private void AnalyseMeshToGetExtentsInAllAxes() {
             IEnumerable<Vector3> vertices = _Mesh.vertices;
 
             _Smallest.x = vertices.Select(v => v.x).Aggregate((a, b) => a < b ? a : b);
@@ -105,11 +111,29 @@ namespace Tools.Common {
             Logging.Log(
                 "X: {0} to {1}, "+
                 "Y: {2} to {3}, "+
-                "Z: {4} to {5}",
+                "Z: {4} to {5} [Scale {6}]",
                 _Smallest.x, _Largest.x,
                 _Smallest.y, _Largest.y,
-                _Smallest.z, _Largest.z
+                _Smallest.z, _Largest.z,
+                _Scale
             );
+        }
+
+        private void CalculateMinAndMax(){
+            WorldScaleDimensions = CalculateDimensions(_Scale);
+            UnscaledDimensions = CalculateDimensions(new Vector3(1, 1, 1));
+        }
+
+        private MeshDimensions CalculateDimensions(Vector3 scaling) {
+            MeshDimensions dimensions = new MeshDimensions(
+                minX: _Smallest.x * scaling.x,
+                maxX: _Largest.x * scaling.x,
+                minY: _Smallest.y * scaling.y,
+                maxY: _Largest.y * scaling.y,
+                minZ: _Smallest.z * scaling.z,
+                maxZ: _Largest.z * scaling.z
+            );
+            return dimensions;
         }
     }
 }

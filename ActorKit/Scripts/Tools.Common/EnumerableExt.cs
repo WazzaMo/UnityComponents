@@ -15,15 +15,17 @@ namespace Tools.Common {
     public static class EnumerableExt {
         public static void ForEach<T>(this IEnumerable<T> collection, Action<T> Do) {
             var enumerator = collection.GetEnumerator();
-            while(enumerator.MoveNext()) {
-                Do(enumerator.Current);
+            if (Do != null) {
+                while(enumerator != null && enumerator.MoveNext() && enumerator.Current != null) {
+                    Do(enumerator.Current);
+                }
             }
         }
 
         public static void ForEach<T>(this IEnumerable<T> collection, Action<T, int> Do) {
             int index = 0;
             var enumerator = collection.GetEnumerator();
-            while (enumerator.MoveNext()) {
+            while (enumerator != null && enumerator.MoveNext()) {
                 Do(enumerator.Current, index);
                 index++;
             }
@@ -32,7 +34,7 @@ namespace Tools.Common {
         public static void ForEachWhile<T>(this IEnumerable<T> collection, Func<T, bool> WhileCondition, Action<T> Do) {
             var enumerator = collection.GetEnumerator();
 
-            while (enumerator.MoveNext() && WhileCondition(enumerator.Current)) {
+            while (enumerator != null && enumerator.MoveNext() && WhileCondition(enumerator.Current)) {
                 Do(enumerator.Current);
             }
         }

@@ -68,7 +68,7 @@ namespace Tools.Common {
             return null;
         }
 
-        public static void AreAllEditorValuesConfigured(this MonoBehaviour component, ref bool isReady, params UnityEngine.Object[] values) {
+        public static bool AreAllEditorValuesConfigured(this MonoBehaviour component, ref bool isReady, params UnityEngine.Object[] values) {
             bool allConfigured = isReady;
             var publicMembers = component.GetType().GetFields().Where(field => field.IsPublic).ToArray();
 
@@ -77,6 +77,7 @@ namespace Tools.Common {
                 Logging.Warning("{0}: Editor parameters missing!", component.name);
             }
             isReady = allConfigured;
+            return allConfigured;
         }
 
         public static bool AreAllEditorValuesConfigured(this MonoBehaviour component, params UnityEngine.Object[] values) {
