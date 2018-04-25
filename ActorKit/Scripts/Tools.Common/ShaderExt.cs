@@ -43,5 +43,28 @@ namespace Tools.Common {
                 return null;
             }
         }
+
+        public static ComputeShader GetComputeShader(string resPath) {
+            var shader = Resources.Load<ComputeShader>(resPath);
+            if (shader == null) {
+                Logging.Warning(typeof(ShaderExt),"Could not load shader: {0}", resPath);
+            } else {
+                Logging.Log(typeof(ShaderExt), "Found compute shader: {0}", resPath);
+            }
+            return shader;
+        }
+
+
+        public static void ListAllComputeShaders() {
+            ComputeShader[] shaders = Resources.FindObjectsOfTypeAll<ComputeShader>();
+            if (shaders != null && shaders.Length > 0) {
+                StringBuilder message = new StringBuilder();
+                message.AppendFormat("Listing ComputeShaders in Resources folder(s): {0} found", shaders.Length);
+                shaders.ForEach(sh => message.AppendFormat("ComputeShader: {0}\n", sh.name));
+                Logging.Log(message.ToString());
+            } else {
+                Logging.Log("No ComputeShaders found in any Resources/ folders in the Unity project");
+            }
+        }
     }
 }

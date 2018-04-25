@@ -36,8 +36,19 @@ namespace Tools.Common {
             var texture = new RenderTexture(_width, _height, COLOR_DEPTH, format);
             texture.enableRandomWrite = true;
             texture.Create();
-            Graphics.Blit(Texture2D.blackTexture, texture);
+            Graphics.Blit(BlankImage(_width, _height, Color.black), texture );
             return texture;
+        }
+
+        private static Texture2D BlankImage(int width, int height, Color color) {
+            var image = new Texture2D(width, height);
+            Color[] pixels = new Color[width * height];
+            for(int index = 0; index < pixels.Length; index++) {
+                pixels[index] = color;
+            }
+            image.SetPixels(pixels);
+            image.Apply();
+            return image;
         }
     }
 
