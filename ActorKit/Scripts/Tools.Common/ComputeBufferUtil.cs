@@ -29,6 +29,15 @@ namespace Tools.Common {
             }
         }
 
+        public static ComputeBuffer CreateBufferForStruct<T>(T value) {
+            int count = 1, stride = SizeInBytes<T>();
+            var buffer = new ComputeBuffer(count, stride);
+            var list = new List<T>();
+            list.Add(value);
+            buffer.SetData(list);
+            return buffer;
+        }
+
         public static bool CalculateCountAndStride<Tval>(List<Tval[]> values, out int count, out int stride) {
             if (values == null || values.Count() == 0) {
                 count = 0;
