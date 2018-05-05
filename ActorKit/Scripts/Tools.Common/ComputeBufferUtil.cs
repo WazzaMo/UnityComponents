@@ -16,6 +16,16 @@ using UnityEngine;
 namespace Tools.Common {
 
     public static class ComputeBufferUtil {
+
+        public static ComputeBuffer CreateBufferForSimpleArray<Tval>(Tval[] values) {
+            int stride, count;
+            stride = SizeInBytes<Tval>();
+            count = values.Length;
+            var computeBuffer = new ComputeBuffer(count, stride);
+            computeBuffer.SetData(values);
+            return computeBuffer;
+        }
+
         public static ComputeBuffer CreateBufferForListOfArrays<Tval>(List<Tval[]> values) {
             int stride, count;
 
