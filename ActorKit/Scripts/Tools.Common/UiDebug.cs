@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 namespace Tools.Common {
 
+    [AddComponentMenu("UnityComponents/Tools.Common/UiDebug")]
     [RequireComponent(typeof(Text))]
     public class UiDebug : MonoBehaviour {
         private static UiDebug _SingleUiDebug = null;
@@ -21,12 +22,12 @@ namespace Tools.Common {
         public static bool IsOkToLog { get { return _SingleUiDebug != null && _SingleUiDebug.IsReady; } }
 
         public static void Log(string formatMessage, params System.Object[] values) {
+            string message = string.Format(formatMessage, values);
             if (IsOkToLog) {
-                string message = string.Format(formatMessage, values);
                 _SingleUiDebug.ShowLine(message);
-            } else {
-                Debug.LogFormat("UiDebug - unable to log to display: {0}", string.Format(formatMessage, values));
-            }
+            }// else {
+                Debug.Log("LOG: " + message);
+            //}
         }
 
         private Text _DebugTextBox;

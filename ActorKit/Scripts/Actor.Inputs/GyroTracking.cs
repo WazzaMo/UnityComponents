@@ -16,6 +16,7 @@ using Actor.Events;
 
 namespace Actor.Inputs {
 
+    [AddComponentMenu("UnityComponents/Actor.Inputs/GyroTracking")]
     public class GyroTracking : MonoBehaviour {
         [Tooltip("For updates on Device Orientiation")]
         [SerializeField] private GyroEvent GyroOrientationListeners;
@@ -50,6 +51,8 @@ namespace Actor.Inputs {
             if ( HasListeners && IsReady ){
                 Quaternion value = TakeReading();
                 NotifyListeners(value);
+            } else if (! HasListeners) {
+                UiDebug.Log("{0}: No listeners", name);
             }
         }
 
