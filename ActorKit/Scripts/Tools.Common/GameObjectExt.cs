@@ -55,6 +55,27 @@ namespace Tools.Common {
             isReady = false;
             return null;
         }
+
+        public static T GetOrAddComponent<T>(this GameObject gameObject) where T: Component {
+            T component = gameObject.GetComponent<T>();
+            if (component == null) {
+                component = gameObject.AddComponent<T>();
+            }
+            return component;
+        }
+
+        public static T FindComponentInParents<T>(this GameObject gameObject) where T: Component {
+            Transform currentParent = gameObject.transform.parent;
+            T result = null;
+            while(result == null && currentParent != null) {
+                result = currentParent.GetComponent<T>();
+                currentParent = currentParent.parent;
+            }
+            if (result == null) {
+                Logging.Warning("{0}: Component of type {1} could not be found in any parent game object.", gameObject.name, TypeUtil.NameOf<T>());
+            }
+            return result;
+        }
     }
 
 }

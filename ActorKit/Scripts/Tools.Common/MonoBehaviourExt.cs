@@ -118,6 +118,19 @@ namespace Tools.Common {
             return allOthers;
         }
 
+        public static T GetFirstMatchingComponentInParentsOrWarn<T>(this Component behaviour) where T : Component {
+            Transform currentParent = behaviour.transform.parent;
+            T result = null;
+            while (result == null && currentParent != null) {
+                result = currentParent.GetComponent<T>();
+                currentParent = currentParent.parent;
+            }
+            if (result == null) {
+                Logging.Warning("{0}: Component of type {1} could not be found in any parent game object.", behaviour.name, TypeUtil.NameOf<T>());
+            }
+            return result;
+        }
+
         public static Mesh GetMeshOrWarn(this MonoBehaviour behaviour, ref bool isReady) {
             if (isReady) {
                 var meshRenderer = behaviour.GetComponentOrWarn<MeshFilter>();
