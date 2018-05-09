@@ -10,19 +10,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Tools.Common;
+
 namespace Actor.UI {
 
+    [AddComponentMenu("UI/DragToTarget")]
+    [RequireComponent(typeof(RectTransform))]
     public class DragToTarget : MonoBehaviour {
+        private RectTransform _RectTransform;
 
-	    // Use this for initialization
 	    void Start () {
-		
+            _RectTransform = this.GetComponentOrWarn<RectTransform>();
 	    }
 	
-	    // Update is called once per frame
-	    void Update () {
-		
-	    }
+        public bool IsPointInRectangle(Vector2 screenPos) {
+            return RectTransformUtility.RectangleContainsScreenPoint(_RectTransform, screenPos);
+        }
     }
 
 }

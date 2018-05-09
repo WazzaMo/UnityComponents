@@ -19,7 +19,6 @@ namespace Actor.UI {
 
     [AddComponentMenu("UI/DragOrigin")]
     [RequireComponent(typeof(RectTransform))]
-    //[ExecuteInEditMode]
     public class DragOrigin : MonoBehaviour {
         public DraggableIcon _PrefabIcon = null;
 

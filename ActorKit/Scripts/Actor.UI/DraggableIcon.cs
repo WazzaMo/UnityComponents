@@ -6,8 +6,9 @@
  */
 
 
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -21,63 +22,87 @@ namespace Actor.UI {
     [RequireComponent(typeof(RectTransform))]
     public class DraggableIcon : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
         public Texture _Image;
+        public Vector2 _PivotPoint;
 
         private RectTransform _RectTransform;
         private RawImage _RawImage;
-        private DragOrigin _Origin;
-        private RectTransform _ReferenceRectangle;
-        private bool _IsReady;
-        private bool _IsDragging;
+        private DragOrigin _Origin = null;
+        private RectTransform _ReferenceRectangle = null;
+        private Canvas _ReferenceCanvas = null;
+        private bool _IsReady = false;
+        private bool _IsDragging = false;
+        private List<DragToTarget> _Targets = null;
+        private Vector2 _OriginHomePosition;
+        private Vector2 _IconHomePosition;
 
-        public void SetOrigin(DragOrigin origin) {
-            _Origin = origin;
-            SetupReferenceRectangle();
-        }
+        private Func<Vector2> _HomeSelector;
+
 
         public void OnBeginDrag(PointerEventData eventData) {
             _IsDragging = true;
+            Logging.Log<DraggableIcon>("drag start {0}", _IsDragging);
         }
 
         public void OnEndDrag(PointerEventData eventData) {
+            DragToTarget target;
+
             _IsDragging = false;
+            if (IsInTarget(eventData.position, out target)) {
+                _IconHomePosition = eventData.position;
+                _HomeSelector = () => _IconHomePosition;
+            } else {
+                _HomeSelector = () => _OriginHomePosition;
+            }
         }
 
         public void OnDrag(PointerEventData eventData) {
+            Logging.Log<DraggableIcon>("dragging {0} - is read: {1}", _IsDragging, _IsReady);
+
             if (_IsReady) {
                 MoveToPointer(eventData);
             }
         }
 
+        public void SetOrigin(DragOrigin origin) {
+            _Origin = origin;
+            if (_Origin == null) {
+                Logging.Warning<DraggableIcon>("Given NULL origin!!");
+            } else {
+                SetupReferenceRectangle();
+                _OriginHomePosition = GetCanvasPosForOrigin();
+                _HomeSelector = () => _OriginHomePosition;
+            }
+        }
+
         void Start() {
             Setup();
+            MakeChildOfCanvas();
             CheckEditorParams();
+            SetupListOfAllSceneTargets();
         }
 
         void Update() {
             if (_IsReady && IsOriginAndReferenceSet()) {
-                if (! _IsDragging) {
-                    _RectTransform.position = _Origin.OriginTransform.position;
+                if (! _IsDragging ) {
+                    MoveToOrigin();
                 }
-            }
-            if (_IsReady && _Origin != null) {
-                Logging.Warning("{0}: {1} did not call SetOrigin()!", gameObject.name, TypeUtil.NameOf<DragOrigin>());
+            } else {
+                Logging.Log<DraggableIcon>("IsReady = {0}  IsOriginAndRefSet() = {1}", _IsReady, IsOriginAndReferenceSet());
             }
         }
 
         private void MoveToPointer(PointerEventData pointerData) {
-            Vector3 dragPosition;
-            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(_ReferenceRectangle, pointerData.position, Camera.main, out dragPosition) ) {
-                _RectTransform.position = dragPosition;
-            }
+            _RectTransform.position = pointerData.position;
         }
 
-        private void Setup() {
-            _RectTransform = this.GetComponent<RectTransform>();
-            _RawImage = gameObject.GetOrAddComponent<RawImage>();
-            _RawImage.texture = _Image;
-            _Origin = null;
-            _IsReady = false;
-            _IsDragging = false;
+        private void MoveToOrigin() {
+            _RectTransform.position = _HomeSelector();
+        }
+
+        private Vector2 GetCanvasPosForOrigin() {
+            Vector2 pos =  _Origin.OriginTransform.TransformPoint(Vector3.zero);
+            Vector2 adjust = new Vector2(0, - _Origin.OriginTransform.rect.height / 2);
+            return pos + adjust;
         }
 
         private bool IsOriginAndReferenceSet() {
@@ -85,11 +110,69 @@ namespace Actor.UI {
             return isSet;
         }
 
+        private void Setup() {
+            EnsureRectTransformResolved();
+            _RawImage = gameObject.GetOrAddComponent<RawImage>();
+            _RawImage.texture = _Image;
+            _RectTransform.pivot = _PivotPoint;
+        }
+
+        private void SetupListOfAllSceneTargets() {
+            DragToTarget[] array = GameObject.FindObjectsOfType<DragToTarget>();
+
+            if (array == null) {
+                Logging.Warning<DraggableIcon>("Cannot find any {0} instances so dragging won't work properly!  Add {0} to a Panel in your UI.", TypeUtil.NameOf<DragToTarget>());
+                _Targets = null;
+            } else {
+                _Targets = array.ToList();
+            }
+        }
+
+        private bool HaveTargets() {
+            return _Targets != null;
+        }
+
+        private bool IsInTarget(Vector2 pos, out DragToTarget detectedTarget) {
+            DragToTarget theTarget = null;
+            if (HaveTargets()) {
+                _Targets.ForEach(target => {
+                    if (target.IsPointInRectangle(pos)) {
+                        theTarget = target;
+                    }
+                });
+            }
+            detectedTarget = theTarget;
+            return theTarget != null;
+        }
+
+        private void EnsureRectTransformResolved() {
+            if (_RectTransform == null) {
+                _RectTransform = gameObject.GetOrAddComponent<RectTransform>();
+            }
+        }
+
+        private void MakeChildOfCanvas() {
+            EnsureRectTransformResolved();
+            if ( IsOriginAndReferenceSet()) {
+                _RectTransform.SetParent(_ReferenceRectangle);
+            } else {
+                Logging.Warning<DraggableIcon>("Unable to set parent of draggable to the Canvas.");
+            }
+        }
+
+        private bool IsParentSet() {
+            return _RectTransform != null && _RectTransform.parent != null;
+        }
+
         private void SetupReferenceRectangle() {
-            Canvas canvas = _Origin.GetFirstMatchingComponentInParentsOrWarn<Canvas>();
-            _RectTransform.SetParent(canvas.transform);
-            if (canvas != null) {
-                _ReferenceRectangle = canvas.GetComponent<RectTransform>();
+            _ReferenceCanvas = _Origin.GetFirstMatchingComponentInParentsOrWarn<Canvas>();
+            if (_ReferenceCanvas != null) {
+                _ReferenceRectangle = _ReferenceCanvas.GetComponent<RectTransform>();
+                if (!IsParentSet()) {
+                    MakeChildOfCanvas();
+                }
+            } else {
+                Logging.Warning<DraggableIcon>("Could not get Canvas parent from Origin");
             }
         }
 
