@@ -21,6 +21,19 @@ namespace Actor.UI {
 
     public static class CreateDragUIMenu {
         const int BASE_PRIORITY = 1;
+        const float SHADE = 47f/256f, ALPHA = 147f/256f;
+
+        private static readonly Sprite _TargetSprite;
+        private static readonly Sprite _BackgroundSprite;
+        private static readonly Vector2 _CentrePivot;
+        private static readonly Color _DefaultBackgroundColor;
+
+        static CreateDragUIMenu() {
+            _TargetSprite = Resources.Load<Sprite>("Images/DragTarget");
+            _BackgroundSprite = Resources.Load<Sprite>("Images/Background-Bordered");
+            _CentrePivot = new Vector2(0.5f, 0.5f);
+            _DefaultBackgroundColor = new Color(SHADE, SHADE, SHADE, ALPHA);
+        }
 
         [MenuItem("GameObject/UI/Drag Origin",false, priority: BASE_PRIORITY + 0)]
         public static void CreateDragOrigin() {
@@ -35,21 +48,49 @@ namespace Actor.UI {
         [MenuItem("GameObject/UI/Draggable Icon", false, priority: BASE_PRIORITY + 1)]
         public static void CreateDraggableIcon() {
             WhenUiObjectSelected(parent => {
-                UiObjectUtil.CreateUiObject<DraggableIcon>("Draggable Icon", parent, Vector2.zero, dIcon => dIcon._PivotPoint = new Vector2(0.5f, 0.5f), PositionIsFixed: false);
+                UiObjectUtil.CreateUiObject<DraggableIcon>(
+                    "Draggable Icon",
+                    parent,
+                    Vector2.zero,
+                    dIcon => dIcon._PivotPoint = _CentrePivot,
+                    PositionIsFixed: false
+                );
             });
         }
 
-        [MenuItem("GameObject/UI/Drag Target", false, priority: BASE_PRIORITY + 2)]
-        public static void CreateDragToTarget() {
+        [MenuItem("GameObject/UI/Drag Target (Target Image)", false, priority: BASE_PRIORITY + 2)]
+        public static void CreateDragToTarget_TargetImage() {
             WhenUiObjectSelected(parent => {
                 UiObjectUtil.CreateUiObject<DragToTarget, Image>(
                     "Drag Target", parent, Vector2.zero,
                     (target, img) => {
                         target._SnapToTargetCentre = true;
-                        img.color = new Color(1, 1, 1, 0.5f);
+                        img.sprite = _TargetSprite;
                     },
                     PositionIsFixed: false
                 );
+            });
+        }
+
+        [MenuItem("GameObject/UI/Drag Target - Panel", false, priority: BASE_PRIORITY + 3)]
+        public static void CreateDragToTarget_Panel() {
+            GameObject panel;
+
+            WhenUiObjectSelected(parent => {
+                panel= UiObjectUtil.CreateUiObject<Image, DragToTarget>(
+                    "Panel (Drag Target)", parent, Vector2.zero,
+                    (img, target) => {
+                        target._SnapToTargetCentre = true;
+                        img.sprite = _BackgroundSprite;
+                        img.type = Image.Type.Sliced;
+                    },
+                    PositionIsFixed: false
+                );
+                var image = panel.GetComponent<Image>();
+                image.color = _DefaultBackgroundColor;
+                var rect = panel.GetComponent<RectTransform>();
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Screen.width);
+                rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Screen.height);
             });
         }
 

@@ -25,10 +25,6 @@ namespace Tools.Common {
                 ! candidate.ToCharArray()
                     .Where(x => INVALID_PATH_CHARS.Contains(x))
                     .Any();
-            //return candidate != null && candidate.Length > 0 &&
-            //    !Path.GetInvalidPathChars()
-            //    .Where(badChar => candidate.Contains(badChar))
-            //    .Any();
         }
 
     }
