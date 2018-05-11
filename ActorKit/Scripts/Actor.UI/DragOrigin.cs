@@ -32,10 +32,14 @@ namespace Actor.UI {
 	    void Start () {
             Setup();
             CheckEditorParameters();
+            ResetDraggableIcon();
+	    }
+
+        public void ResetDraggableIcon() {
             if (_IsReady) {
                 SpawnIcon();
             }
-	    }
+        }
 
         private void Setup() {
             _Image = gameObject.GetOrAddComponent<Image>();

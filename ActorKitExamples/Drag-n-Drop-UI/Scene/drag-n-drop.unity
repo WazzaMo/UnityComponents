@@ -193,6 +193,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05f12850a524eef48b2023c3458b4e78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _IconDraggedToTarget:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: Actor.Events.DraggedToTargetEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  _SnapToTargetCentre: 0
 --- !u!1 &142197559
 GameObject:
   m_ObjectHideFlags: 0

@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4909756137374048}
   - component: {fileID: 114008046438550882}
+  - component: {fileID: 114072774295727298}
   m_Layer: 0
   m_Name: AdventurerIcon
   m_TagString: Untagged
@@ -53,3 +54,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _Image: {fileID: 2800000, guid: aa8d60406a379fb4d99f8cd793b8d237, type: 3}
   _PivotPoint: {x: 0.5, y: 0.5}
+--- !u!114 &114072774295727298
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1705555349168064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cec7a6570d12877499cb587cfd434f85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _CharacterImage: {fileID: 2800000, guid: f4993011d9fd0a04182abe20ac6b121c, type: 3}

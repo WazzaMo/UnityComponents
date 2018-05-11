@@ -33,45 +33,53 @@ namespace Actor.UI {
         private bool _IsDragging = false;
         private List<DragToTarget> _Targets = null;
         private Vector2 _OriginHomePosition;
-        private Vector2 _IconHomePosition;
+        private Vector2 _IconDragPosition;
 
         private Func<Vector2> _HomeSelector;
+
+        public Vector2 DragPosition { get { return _IsDragging ? _IconDragPosition : Vector2.zero; } }
 
 
         public void OnBeginDrag(PointerEventData eventData) {
             _IsDragging = true;
-            Logging.Log<DraggableIcon>("drag start {0}", _IsDragging);
         }
 
         public void OnEndDrag(PointerEventData eventData) {
             DragToTarget target;
 
-            _IsDragging = false;
             if (IsInTarget(eventData.position, out target)) {
-                _IconHomePosition = eventData.position;
-                _HomeSelector = () => _IconHomePosition;
+                _IconDragPosition = eventData.position;
+                SetSelectorToIconDragPosition();
+                target.IconStoppedDraggingOverTarget(this);
             } else {
-                _HomeSelector = () => _OriginHomePosition;
+                SetSelectorToOriginPosition();
             }
+            _IsDragging = false;
         }
 
         public void OnDrag(PointerEventData eventData) {
-            Logging.Log<DraggableIcon>("dragging {0} - is read: {1}", _IsDragging, _IsReady);
-
             if (_IsReady) {
                 MoveToPointer(eventData);
             }
         }
 
+        public void MoveBackToOrigin() {
+            SetSelectorToOriginPosition();
+        }
+
         public void SetOrigin(DragOrigin origin) {
             _Origin = origin;
             if (_Origin == null) {
-                Logging.Warning<DraggableIcon>("Given NULL origin!!");
+                Logging.Warning<DraggableIcon>("SetOrigin() given NULL origin!");
             } else {
                 SetupReferenceRectangle();
                 _OriginHomePosition = GetCanvasPosForOrigin();
                 _HomeSelector = () => _OriginHomePosition;
             }
+        }
+
+        internal void SetSnapToPosition(Vector2 pos) {
+            _IconDragPosition = pos;
         }
 
         void Start() {
@@ -84,18 +92,26 @@ namespace Actor.UI {
         void Update() {
             if (_IsReady && IsOriginAndReferenceSet()) {
                 if (! _IsDragging ) {
-                    MoveToOrigin();
+                    MoveToSelectorPoint();
                 }
             } else {
-                Logging.Log<DraggableIcon>("IsReady = {0}  IsOriginAndRefSet() = {1}", _IsReady, IsOriginAndReferenceSet());
+                Logging.Log<DraggableIcon>("Not ready for dragging! IsReady = {0}  IsOriginAndRefSet() = {1}", _IsReady, IsOriginAndReferenceSet());
             }
+        }
+
+        private void SetSelectorToIconDragPosition() {
+            _HomeSelector = () => _IconDragPosition;
+        }
+
+        private void SetSelectorToOriginPosition() {
+            _HomeSelector = () => _OriginHomePosition;
         }
 
         private void MoveToPointer(PointerEventData pointerData) {
             _RectTransform.position = pointerData.position;
         }
 
-        private void MoveToOrigin() {
+        private void MoveToSelectorPoint() {
             _RectTransform.position = _HomeSelector();
         }
 
@@ -167,12 +183,16 @@ namespace Actor.UI {
         private void SetupReferenceRectangle() {
             _ReferenceCanvas = _Origin.GetFirstMatchingComponentInParentsOrWarn<Canvas>();
             if (_ReferenceCanvas != null) {
-                _ReferenceRectangle = _ReferenceCanvas.GetComponent<RectTransform>();
-                if (!IsParentSet()) {
-                    MakeChildOfCanvas();
-                }
+                SetupRectTransformForCanvasAndMakeParentOfIcon();
             } else {
                 Logging.Warning<DraggableIcon>("Could not get Canvas parent from Origin");
+            }
+        }
+
+        private void SetupRectTransformForCanvasAndMakeParentOfIcon() {
+            _ReferenceRectangle = _ReferenceCanvas.GetComponent<RectTransform>();
+            if (!IsParentSet()) {
+                MakeChildOfCanvas();
             }
         }
 

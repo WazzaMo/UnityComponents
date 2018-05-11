@@ -14,7 +14,6 @@ using Actor.UI;
 namespace Actor.Events {
 
     [System.Serializable]
-    public class DraggedToTargetEvent : UnityEvent<DragToTarget> {
-    }
+    public class DraggedToTargetEvent : UnityEvent<DragData> { }
 
 }
