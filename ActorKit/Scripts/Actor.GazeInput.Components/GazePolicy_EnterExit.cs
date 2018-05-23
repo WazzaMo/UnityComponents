@@ -8,8 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
 
 using UnityEngine;
 
@@ -17,7 +16,7 @@ using Tools.Common;
 
 
 
-namespace Actor.GazeInput {
+namespace Actor.GazeInput.Components {
 
     public class GazePolicy_EnterExit : MonoBehaviour, IGazeEventPolicy {
         private GazeData _LastGazeData;
@@ -43,9 +42,9 @@ namespace Actor.GazeInput {
         private void PolicyDoesNothingWithSameTarget() {}
 
         private void DifferentTarget(GazeData data, List<GazeData> eventsToBroadcast) {
+            //Logging.Log<GazePolicy_EnterExit>("Different target looked at!");
             NewTarget(data, eventsToBroadcast);
             AbandonedTarget(data, eventsToBroadcast);
-            Logging.Log<GazePolicy_EnterExit>("Different target looked at!");
         }
 
         private void NewTarget(GazeData data, List<GazeData> eventsToBroadcast) {
@@ -56,7 +55,7 @@ namespace Actor.GazeInput {
                 GazeHandler = data.GazeHandler
             };
             eventsToBroadcast.Add(diffData);
-            Logging.Log<GazePolicy_EnterExit>("Now looking at new target {0}", data.GazeTarget.name);
+            //Logging.Log<GazePolicy_EnterExit>("Now looking at new target {0}", data.GazeTarget.name);
         }
 
         private void AbandonedTarget(GazeData data, List<GazeData> eventsToBroadcast) {
@@ -67,7 +66,7 @@ namespace Actor.GazeInput {
                 TimeGazing = Time.deltaTime + _LastGazeData.TimeGazing
             };
             eventsToBroadcast.Add(info);
-            Logging.Log<GazePolicy_EnterExit>("Abandoned target {0}", data.GazeTarget.name);
+            //Logging.Log<GazePolicy_EnterExit>("Abandoned target {0}", data.GazeTarget.name);
         }
 
     }

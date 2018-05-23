@@ -13,14 +13,16 @@ using System.Text;
 
 using Tools.Common;
 
-namespace Actor.GazeInput {
+namespace Actor.GazeInput.Implementation {
 
     public class SimpleGazeEventBroadcaster : IGazeEventBroadcaster {
         public void RegisterGlobalHandlers(List<IGlobalGazeEventHandler> handlers) {
         }
 
         public void BroadcastGazeEvents(List<GazeData> eventList) {
-            eventList.ForEach(dataEvent => BroadCast(dataEvent.GazeHandler, dataEvent));
+            eventList
+                .Where(data => data.GazeHandler != null)
+                .ForEach(dataEvent => BroadCast(dataEvent.GazeHandler, dataEvent));
         }
 
         private void BroadCast(IGazeEventHandler handler, GazeData data) {

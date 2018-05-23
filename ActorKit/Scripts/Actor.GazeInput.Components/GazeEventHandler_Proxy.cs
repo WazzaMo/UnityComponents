@@ -16,13 +16,13 @@ using UnityEngine.Events;
 using Tools.Common;
 
 
-namespace Actor.GazeInput {
+namespace Actor.GazeInput.Components {
 
     class GazeEventHandler_Proxy : MonoBehaviour, IGazeEventHandler {
-        public UnityEvent _OnGazeEnter { get; private set; }
-        public UnityEvent _OnGazeExit { get; private set; }
-        public UnityEvent _OnGazeStay { get; private set; }
-        public UnityEvent _OnGazeClick { get; private set; }
+        public UnityEvent _OnGazeEnter;
+        public UnityEvent _OnGazeExit;
+        public UnityEvent _OnGazeStay;
+        public UnityEvent _OnGazeClick;
 
         public void OnGazeClick(GazeData data) { CallSafe(_OnGazeClick); }
 

@@ -25,6 +25,7 @@ namespace Actor.GazeInput {
         private Vector3 _CentreScreenPos;
         private List<IGazeEventPolicy> _EventPolicies;
         private IGazeEventBroadcaster _EventBroadcaster;
+        private IGazeEventHandler _LastHandler = null;
 
         public int _NumConcurrentHits = 2;
         public float _MaxDepth = 50f;
@@ -62,7 +63,15 @@ namespace Actor.GazeInput {
                 _Current.GazeTarget = hit.collider.gameObject;
                 _Current.GazeHandler = handler;
                 _Current.EventKind = GazeEventKind.NoEvent;
+                _LastHandler = handler;
                 return true;
+            } else {
+                if (_LastHandler != handler) {
+                    _Current.GazeTarget = hit.collider.gameObject;
+                    _Current.GazeHandler = null;
+                    _LastHandler = handler;
+                    return true;
+                }
             }
             return false;
         }
@@ -76,14 +85,15 @@ namespace Actor.GazeInput {
         }
 
         private void Setup() {
-            _EventBroadcaster = new SimpleGazeEventBroadcaster();
+            _EventBroadcaster = new Actor.GazeInput.Implementation.SimpleGazeEventBroadcaster();
             SetupCamera();
             SetupGazeData();
-            _CentreScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+            EnsureAllGazeEventHandlersCanBeFound();
         }
 
         private void SetupCamera() {
             _Camera = this.GetComponentOrWarn<Camera>();
+            _CentreScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0);
         }
 
         private void SetupGazeData() {
@@ -102,7 +112,16 @@ namespace Actor.GazeInput {
                 .ToList();
             if (_EventPolicies.Count == 0) {
                 Logging.Log<GazeEventSource>("No Gaze Event policies found");
+            } else {
+                Logging.Log<GazeEventSource>("Found {0} policies {1}",
+                    _EventPolicies.Count(),
+                    _EventPolicies.Select(policy => policy.GetType().Name).Aggregate((a, b) => string.Format("{0}, {1}", a, b))
+                );
             }
+        }
+
+        private void EnsureAllGazeEventHandlersCanBeFound() {
+            GameObjectUtil.EnsureComponentIsPresentForObjectsInSceneWithInterface<IGazeEventHandler, Collider>(missing => missing.AddComponent<SphereCollider>());
         }
     }
 

@@ -16,7 +16,7 @@ using UnityEngine.Events;
 using Tools.Common;
 
 
-namespace Actor.GazeInput {
+namespace Actor.GazeInput.Components {
 
     class GazeEventHandler_Debug : MonoBehaviour, IGazeEventHandler {
 
