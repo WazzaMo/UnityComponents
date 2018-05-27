@@ -19,6 +19,8 @@ namespace Tools.Common {
 
         public static ComputeBuffer CreateBufferForSimpleArray<Tval>(Tval[] values) {
             int stride, count;
+
+            ExceptionIfInvalidArray(values);
             stride = SizeInBytes<Tval>();
             count = values.Length;
             var computeBuffer = new ComputeBuffer(count, stride);
@@ -54,6 +56,7 @@ namespace Tools.Common {
                 stride = 0;
                 return false;
             } else {
+                values.ForEach(valArray => ExceptionIfInvalidArray(valArray));
                 int totalSize = TotalValuesInArrayList(values);
                 stride = totalSize * SizeInBytes<Tval>() / values.Count();
                 count = values.Count();
@@ -63,6 +66,17 @@ namespace Tools.Common {
 
         public static int SizeInBytes<T>() {
             return Marshal.SizeOf(typeof(T));
+        }
+
+        private static void ExceptionIfInvalidArray<T>(T[] values) {
+            if (values == null) {
+                throw new ArgumentException(string.Format("Invalid Argument: NULL of type '{0}' Arrary given for ComputeBuffer", TypeUtil.NameOf<T>()));
+            }
+            if (values.Length == 0) {
+                throw new ArgumentException(
+                    string.Format("Invalid Argument: Type '{0}' Array of 0 length given for ComputeBuffer", TypeUtil.NameOf<T>())
+                );
+            }
         }
 
         private static Tval[] FlattenedArray<Tval>(List<Tval[]> values) {
