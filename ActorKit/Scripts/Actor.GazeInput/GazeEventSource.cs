@@ -44,6 +44,9 @@ namespace Actor.GazeInput {
                     if (IsGazeDataNeedingUpdate(hit)) {
                         UpdateGazeDataViaPolicies();
                     }
+                } else if (IsGazeDataNeedingUpdateWhenNoHit()){
+                    SetCurrentToEmtpy();
+                    UpdateGazeDataViaPolicies();
                 }
             }
         }
@@ -60,20 +63,33 @@ namespace Actor.GazeInput {
         private bool IsGazeDataNeedingUpdate(RaycastHit hit) {
             IGazeEventHandler handler = hit.collider.GetComponent<IGazeEventHandler>();
             if (handler != null) {
-                _Current.GazeTarget = hit.collider.gameObject;
-                _Current.GazeHandler = handler;
-                _Current.EventKind = GazeEventKind.NoEvent;
-                _LastHandler = handler;
+                SetCurrentToHitInfo(hit.collider.gameObject, handler);
                 return true;
             } else {
-                if (_LastHandler != handler) {
-                    _Current.GazeTarget = hit.collider.gameObject;
-                    _Current.GazeHandler = null;
-                    _LastHandler = handler;
+                if (IsGazeDataNeedingUpdateWhenNoHit()) {
+                    SetCurrentToEmtpy(hit.collider.gameObject);
                     return true;
                 }
             }
             return false;
+        }
+
+        private bool IsGazeDataNeedingUpdateWhenNoHit() {
+            var isNeeded = _LastHandler != null;
+            _LastHandler = null;
+            return isNeeded;
+        }
+
+        private void SetCurrentToHitInfo(GameObject target, IGazeEventHandler handler) {
+            _Current.GazeTarget = target;
+            _Current.GazeHandler = handler;
+            _Current.EventKind = GazeEventKind.NoEvent;
+            _LastHandler = handler;
+        }
+
+        private void SetCurrentToEmtpy(GameObject target = null) {
+            _Current.GazeTarget = target;
+            _Current.GazeHandler = null;
         }
 
         private void UpdateGazeDataViaPolicies() {

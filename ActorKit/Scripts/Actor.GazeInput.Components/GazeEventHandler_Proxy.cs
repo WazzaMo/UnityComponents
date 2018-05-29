@@ -6,10 +6,6 @@
  */
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -19,10 +15,10 @@ using Tools.Common;
 namespace Actor.GazeInput.Components {
 
     class GazeEventHandler_Proxy : MonoBehaviour, IGazeEventHandler {
-        public UnityEvent _OnGazeEnter;
-        public UnityEvent _OnGazeExit;
-        public UnityEvent _OnGazeStay;
-        public UnityEvent _OnGazeClick;
+        public UnityEvent _OnGazeEnter = null;
+        public UnityEvent _OnGazeExit = null;
+        public UnityEvent _OnGazeStay = null;
+        public UnityEvent _OnGazeClick = null;
 
         public void OnGazeClick(GazeData data) { CallSafe(_OnGazeClick); }
 
@@ -32,9 +28,22 @@ namespace Actor.GazeInput.Components {
 
         public void OnGazeLeave(GazeData data) { CallSafe(_OnGazeExit); }
 
+        void Start() {
+            InitIfNull(ref _OnGazeClick);
+            InitIfNull(ref _OnGazeEnter);
+            InitIfNull(ref _OnGazeExit);
+            InitIfNull(ref _OnGazeStay);
+        }
+
         private void CallSafe(UnityEvent _event) {
             if (_event != null) {
                 _event.Invoke();
+            }
+        }
+
+        private void InitIfNull(ref UnityEvent _event) {
+            if (_event == null) {
+                _event = new UnityEvent();
             }
         }
     }

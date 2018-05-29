@@ -27,48 +27,65 @@ namespace Actor.GazeInput.Components {
         }
 
         public void ApplyGesturePolicy(GazeData data, List<GazeData> eventsToBroadcast) {
-            if (_LastGazeData.GazeTarget == null) {
-                NewTarget(data, eventsToBroadcast);
+            if (_LastGazeData.GazeTarget == null && data.GazeTarget == null) {
+                PolicyDoesNothingWithSameTarget();
+            } else if (_LastGazeData.GazeTarget == null && data.GazeTarget != null) {
+                var enterData = NewTarget(data, eventsToBroadcast);
+                ChangeFocusTo(enterData);
+            } else if (_LastGazeData.GazeTarget != null && data.GazeTarget == null) {
+                var emptyData = AbandonedTarget(data, eventsToBroadcast);
+                ChangeFocusTo(emptyData);
             } else if (data.GazeTarget != _LastGazeData.GazeTarget) {
-                DifferentTarget(data, eventsToBroadcast);
-            } else if (data.GazeTarget == null) {
-                AbandonedTarget(data, eventsToBroadcast);
+                var enterData = DifferentTarget(data, eventsToBroadcast);
+                ChangeFocusTo(enterData);
             } else if (data.GazeTarget == _LastGazeData.GazeTarget) {
                 PolicyDoesNothingWithSameTarget();
             }
-            _LastGazeData = data;
+        }
+
+        private void ChangeFocusTo(GazeData focus) {
+            _LastGazeData = focus;
         }
 
         private void PolicyDoesNothingWithSameTarget() {}
 
-        private void DifferentTarget(GazeData data, List<GazeData> eventsToBroadcast) {
-            //Logging.Log<GazePolicy_EnterExit>("Different target looked at!");
-            NewTarget(data, eventsToBroadcast);
-            AbandonedTarget(data, eventsToBroadcast);
+        private GazeData DifferentTarget(GazeData data, List<GazeData> eventsToBroadcast) {
+            var exitData = CreateExitData(_LastGazeData);
+            var enterData = CreateEnterData(data);
+            eventsToBroadcast.Add(exitData);
+            eventsToBroadcast.Add(enterData);
+            return enterData;
         }
 
-        private void NewTarget(GazeData data, List<GazeData> eventsToBroadcast) {
-            GazeData diffData = new GazeData() {
-                GazeTarget = data.GazeTarget,
-                EventKind = GazeEventKind.OnGazeEnter,
-                TimeGazing = 0f,
-                GazeHandler = data.GazeHandler
-            };
+        private GazeData NewTarget(GazeData data, List<GazeData> eventsToBroadcast) {
+            GazeData diffData = CreateEnterData(data);
             eventsToBroadcast.Add(diffData);
-            //Logging.Log<GazePolicy_EnterExit>("Now looking at new target {0}", data.GazeTarget.name);
+            return diffData;
         }
 
-        private void AbandonedTarget(GazeData data, List<GazeData> eventsToBroadcast) {
-            GazeData info = new GazeData() {
-                GazeTarget = _LastGazeData.GazeTarget,
-                EventKind = GazeEventKind.OnGazeExit,
-                GazeHandler = _LastGazeData.GazeHandler,
-                TimeGazing = Time.deltaTime + _LastGazeData.TimeGazing
-            };
+        private GazeData AbandonedTarget(GazeData data, List<GazeData> eventsToBroadcast) {
+            var info = CreateExitData(_LastGazeData);
             eventsToBroadcast.Add(info);
-            //Logging.Log<GazePolicy_EnterExit>("Abandoned target {0}", data.GazeTarget.name);
+            return default(GazeData);
         }
 
+        private GazeData CreateEnterData(GazeData baseData) {
+            return new GazeData() {
+                GazeTarget = baseData.GazeTarget,
+                EventKind = GazeEventKind.OnGazeEnter,
+                GazeHandler = baseData.GazeHandler,
+                TimeGazing = 0f
+            };
+        }
+
+        private GazeData CreateExitData(GazeData baseData) {
+            return new GazeData() {
+                GazeTarget = baseData.GazeTarget,
+                EventKind = GazeEventKind.OnGazeExit,
+                GazeHandler = baseData.GazeHandler,
+                TimeGazing = Time.deltaTime + baseData.TimeGazing
+            };
+        }
     }
 
 }

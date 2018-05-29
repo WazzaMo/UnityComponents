@@ -39,7 +39,6 @@ namespace Example.GazeEvents {
         }
 
         private float RandomRadius() {
-            float factor = _MaxRadius - _MinRadius;
             return _MinRadius + ((float)_Random.NextDouble() * _MaxRadius);
         }
 
