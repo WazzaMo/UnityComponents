@@ -1,6 +1,8 @@
 ﻿/*
- * (c) Copyright 2018 Lokel Digital Pty Ltd
- * CNN for Unity
+ * TextureUtil Unity Component
+ * (c) Copyright 2017, Warwick Molloy
+ * GitHub repo WazzaMo/UnityComponents
+ * Provided under the terms of the MIT License.
  */
 
 
