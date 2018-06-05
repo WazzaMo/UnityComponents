@@ -15,8 +15,6 @@ using UnityEngine;
 namespace Actor.Inputs {
 
     public class DeviceMotionSourceAccelGyro : IDeviceMotionSource {
-        [SerializeField] private Vector3 SensitivityFactor = Vector3.one;
-
         private bool _HasGyro;
 
         public bool IsHardwareAvailable { get { return IsDeviceWithHardware(); } }
