@@ -28,6 +28,17 @@ namespace Tools.Common {
             return computeBuffer;
         }
 
+        public static void UpdateBufferForSimpleArray<Tval>(Tval[] values, ComputeBuffer buffer) {
+            int stride, count;
+
+            ExceptionIfInvalidArray(values);
+            stride = SizeInBytes<Tval>();
+            count = values.Length;
+            if (buffer.count == count && buffer.stride == stride) {
+                buffer.SetData(values);
+            }
+        }
+
         public static ComputeBuffer CreateBufferForListOfArrays<Tval>(List<Tval[]> values) {
             int stride, count;
 
@@ -48,6 +59,17 @@ namespace Tools.Common {
             list.Add(value);
             buffer.SetData(list);
             return buffer;
+        }
+
+        public static void UpdateBufferForStruct<T>(T UpdatedValue, ComputeBuffer buffer) {
+            if (buffer != null
+                && buffer.count == 1
+                && buffer.stride == SizeInBytes<T>()) {
+                var list = new List<T>() { UpdatedValue };
+                buffer.SetData(list);
+            } else {
+                Logging.Warning<ComputeBuffer>("Unable to update ComputeBuffer with updated value of type {0}", TypeUtil.NameOf<T>());
+            }
         }
 
         public static bool CalculateCountAndStride<Tval>(List<Tval[]> values, out int count, out int stride) {
