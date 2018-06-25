@@ -86,6 +86,17 @@ namespace Tools.Common {
             }
         }
 
+        public static T[] GetBufferDataArray<T>(ComputeBuffer buffer) {
+            T[] data;
+            if (buffer == null) {
+                data = new T[0];
+            } else {
+                data = new T[buffer.count];
+                buffer.GetData(data);
+            }
+            return data;
+        }
+
         public static int SizeInBytes<T>() {
             return Marshal.SizeOf(typeof(T));
         }

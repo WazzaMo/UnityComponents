@@ -1,0 +1,37 @@
+﻿/*
+ * TestInvokationOrder ComputeShader Unity Component
+ * (c) Copyright 2018, Warwick Molloy
+ * GitHub repo WazzaMo/UnityComponents
+ * Provided under the terms of the MIT License.
+ */
+
+#pragma kernel CSMain
+
+RWBuffer<uint> ThreadSequence;
+RWBuffer<uint> GroupSequence;
+
+#define GROUP_SIZE	8
+
+groupshared uint index = 0;
+
+
+[numthreads(GROUP_SIZE,1,1)]
+void CSMain(
+	uint3 gID : SV_GroupID,
+	uint3 gtID: SV_GroupThreadID,
+	uint3 tID : SV_DispatchThreadID
+)
+{
+	uint prev_value;
+	uint currentIndex;
+
+	InterlockedAdd(index, (uint)1, prev_value);
+	currentIndex = gID.x * GROUP_SIZE + prev_value;
+
+	ThreadSequence[currentIndex] = tID.x;
+	if (gID.x == 0) {
+		GroupSequence[currentIndex] = gtID.x;
+	} else {
+		GroupSequence[currentIndex] = gtID.x + 2 * GROUP_SIZE;
+	}
+}
