@@ -26,8 +26,14 @@ The sequence of threads is:
 
 These threads were in thread group 0 (0 to 7), followed by group 1(8 to 15). This is true for successive runs. The thread IDs appear to be interleaved.
 
+## Parallel Sum Example
+This test just demonstrates that the NVIDIA HLSL code shared by Nathan Hoobler at GDC 2011 works in Unity (reference below).
+
+
 # References
 [NVIDIA DirectCompute Programming Guide](http://developer.download.nvidia.com/compute/DevZone/docs/html/DirectCompute/doc/DirectCompute_Programming_Guide.pdf)
 
 [Unity Technologies - ComputeShader.Dispatch](https://docs.unity3d.com/ScriptReference/ComputeShader.Dispatch.html)
+
+[Nathan Hoobler, NVIDIA, High Performance Post Processing - GDC 2011](http://www.nvidia.com/content/PDF/GDC2011/Nathan_Hoobler.pdf)
 
