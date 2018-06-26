@@ -1,0 +1,35 @@
+﻿#pragma kernel ParallelSumCS
+
+/*
+ * Example based on code from NVIDIA Sample Code
+ * Presented at GDC 2011
+ * http://www.nvidia.com/content/PDF/GDC2011/Nathan_Hoobler.pdf
+ */
+
+#define GROUP_SIZE 8
+
+Buffer<float> valuesIn;
+RWBuffer<float> sumOut;
+
+groupshared float sSums[GROUP_SIZE];
+
+[numthreads(GROUP_SIZE,1,1)]
+void ParallelSumCS(
+	uint3 gID : SV_GroupID,
+	uint3 gtID: SV_GroupThreadID,
+	uint3 tID : SV_DispatchThreadID
+)
+{
+	sSums[gtID.x] = valuesIn[tID.x]; // corrected
+	GroupMemoryBarrierWithGroupSync();
+	for(uint t=GROUP_SIZE/2; t > 0; t = t>>1)
+	{
+		if (gtID.x < t) {
+			sSums[gtID.x] += sSums[gtID.x + t];
+		}
+		GroupMemoryBarrier();
+	}
+	if (tID.x == 0) {
+		sumOut[0] = sSums[0];
+	}
+}
