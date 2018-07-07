@@ -1,0 +1,55 @@
+﻿
+#pragma kernel Life3D
+
+Buffer<uint3> SpaceSize;
+Buffer<float4> InValues;
+float Time;
+RWTexture3D<float> Output;
+
+#define VOL_LEN	8
+#define MAGNITUDE	0.5
+
+uint indexFrom(uint3 pos)
+{
+	return
+		SpaceSize[0].x * (pos.y + SpaceSize[0].y * pos.z)
+		+ pos.x;
+}
+
+float inValue(uint3 vol)
+{
+	return InValues[indexFrom(vol)].r;
+}
+
+float getValue(uint3 vol)
+{
+	return Output[vol];
+}
+
+void setValue(uint3 vol, float value)
+{
+	Output[vol] = value;
+}
+
+void applyDelta(uint3 pos, float delValue)
+{
+	float value = getValue(pos);
+	value = value + delValue;
+	value = value < 0 ? 0 : value;
+	setValue(pos, value);
+}
+
+void UpdatePoint( uint3 vol )
+{
+	float baseValue = inValue(vol);
+	setValue(vol, MAGNITUDE * sin(Time) + baseValue);
+}
+
+[numthreads(VOL_LEN, VOL_LEN, 1)]
+void Life3D (
+	uint3 gID : SV_GROUPID,
+	uint3 tID : SV_DispatchThreadID
+)
+{
+	UpdatePoint(tID);
+}
