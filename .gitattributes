@@ -2,6 +2,9 @@
 * text=auto
 
 *.cs text
+*.compute text
+*.hlsl text
+*.shader text
 
 *.unity binary
 *.zip binary

@@ -200,6 +200,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _FpsTextBox: {fileID: 238236871}
+  _NumFrames: 10
 --- !u!1 &337747748
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,9 +309,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bebb522c4a6fd145ae548348181cc35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Width: 3
-  _Height: 3
-  _Depth: 3
+  _Width: 4
+  _Height: 4
+  _Depth: 4
 --- !u!4 &460424066
 Transform:
   m_ObjectHideFlags: 0
