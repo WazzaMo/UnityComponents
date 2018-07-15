@@ -11,42 +11,56 @@
 
 Buffer<SizeType>  Size;
 
-uint indexFrom(uint3 pos)
-{
-	return Size[0].Width * (pos.y + Size[0].Height * pos.z) + pos.x;
-}
+// Parameter Options
+
+Texture3D<float4> InTextureF4;
+
+Texture3D<float>  InTextureF1;
+RWTexture3D<float> OutTexture1F;
+
+Buffer<float>      InData;
+RWBuffer<float>   OutData;
+
+RWBuffer<float4>  OutColors;
 
 //----------------------
 #pragma kernel GetTextureF4Data
 
-Texture3D<float4> InTextureF4;
-RWBuffer<float4>  OutColors;
 
 [numthreads(GROUP_SIZE,GROUP_SIZE,1)]
 void GetTextureF4Data (uint3 id : SV_DispatchThreadID)
 {
-	OutColors[ indexFrom(id)] = InTextureF4[id];
+	OutColors[ indexFrom(Size[0],id)] = InTextureF4[id];
+}
+
+//---------
+#pragma kernel GetTextureF1Color
+
+
+[numthreads(GROUP_SIZE,GROUP_SIZE,1)]
+void GetTextureF1Color (uint3 id : SV_DispatchThreadID)
+{
+	// OutColors[ indexFrom(Size[0],id)] = InTextureF1[id];
+	float val = InTextureF1[id];
+	OutColors[ indexFrom(Size[0],id)] = float4(val,0,0,val);
 }
 
 //---------
 #pragma kernel GetTextureF1Data
 
-Texture3D<float>  InTextureF1;
 
 [numthreads(GROUP_SIZE,GROUP_SIZE,1)]
 void GetTextureF1Data (uint3 id : SV_DispatchThreadID)
 {
-	OutColors[ indexFrom(id)] = float4(InTextureF1[id],0,0,1);
+	OutData[ indexFrom(Size[0],id)] = InTextureF1[id];
 }
 
 //---------
 #pragma kernel SetTextureF1Data
 
-RWTexture3D<float> OutTexture1F;
-Buffer<float4>     InColors;
 
 [numthreads(1,1,1)]
 void SetTextureF1Data(uint3 tID : SV_DISPATCHTHREADID)
 {
-	OutTexture1F[tID] = InColors[ indexFrom(tID) ].r;
+	OutTexture1F[tID] = InData[ indexFrom(Size[0],tID) ];
 }

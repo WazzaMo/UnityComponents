@@ -1,0 +1,65 @@
+﻿/*
+ * Swirl Unity Component - Compute Shader
+ * (c) Copyright 2017, 2018, Warwick Molloy
+ * GitHub repo WazzaMo/UnityComponents
+ * Provided under the terms of the MIT License.
+ */
+
+#include "../../../ActorKit/Resources/Shaders/3DTextureTypes.hlsl"
+
+#pragma kernel SwirlKernel
+#define VOL_LEN	8
+
+
+Buffer<SizeType> Size;
+RWTexture3D<float> Volume;
+float Time;
+
+
+#define _Width	((int)Size[0].Width)
+#define _Height ((int)Size[0].Height)
+#define _Depth  ((int)Size[0].Depth)
+#define _UWidth	((uint)_Width)
+#define _UHeight ((uint)_Height)
+#define _UDepth  ((uint)_Depth)
+
+int3 _Origin = 0;
+
+void InitOrigin()
+{
+	_Origin = int3(_Width >> 1, _Height >> 1, _Depth >> 1);
+}
+
+int3 PosToCoord(uint3 pos)
+{
+	int3 iPos = int3(pos.x, pos.y, pos.z);
+	return iPos - _Origin;
+}
+
+uint3 CoordToPos(int3 coord)
+{
+	int3 iPos = _Origin + coord;
+	return uint3((uint) iPos.x, (uint) iPos.y, (uint) iPos.z);
+}
+
+void Blah(uint3 pos)
+{
+	float angle;
+	int3 coord = PosToCoord(pos);
+	float z = coord.z;
+	float x = coord.x;
+	angle = x != 0 ? atan(z / x) : 90 * sign(z);
+
+	float value = (x*x + z*z) < (_Origin.x * _Origin.x) ? sin( angle + Time * 10) : 0;
+	Volume[pos] = value / 2;
+}
+
+[numthreads(1, 1, 1)]
+void SwirlKernel (
+	uint3 gID : SV_GROUPID,
+	uint3 tID : SV_DispatchThreadID
+)
+{
+	InitOrigin();
+	Blah(tID);
+}

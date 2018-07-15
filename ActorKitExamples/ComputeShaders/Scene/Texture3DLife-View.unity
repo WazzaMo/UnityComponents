@@ -312,6 +312,7 @@ MonoBehaviour:
   _Width: 4
   _Height: 4
   _Depth: 4
+  _Material: {fileID: 2100000, guid: 161dc57909a7a5c438a94bf8d2ec8d40, type: 2}
 --- !u!4 &460424066
 Transform:
   m_ObjectHideFlags: 0

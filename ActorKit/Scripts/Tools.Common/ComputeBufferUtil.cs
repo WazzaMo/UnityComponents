@@ -17,6 +17,15 @@ namespace Tools.Common {
 
     public static class ComputeBufferUtil {
 
+        public static ComputeBuffer CreateBufferForSimpleArray<Tval>(int NumberValues) {
+            int stride, count;
+
+            stride = SizeInBytes<Tval>();
+            count = NumberValues;
+            var computeBuffer = new ComputeBuffer(count, stride);
+            return computeBuffer;
+        }
+
         public static ComputeBuffer CreateBufferForSimpleArray<Tval>(Tval[] values) {
             int stride, count;
 

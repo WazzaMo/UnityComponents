@@ -37,6 +37,8 @@ namespace ActorKitExample.ComputeShaders {
             _Height = 3, 
             _Depth = 3;
 
+        public Material _Material = null;
+
         private uint3 __SpaceSize;
         private ComputeBuffer _SpaceSizeBuffer;
         private RenderTexture _3DData;
@@ -112,8 +114,9 @@ namespace ActorKitExample.ComputeShaders {
         }
 
         private void Setup() {
+            _IsReady = _Width > 0 && _Height > 0 && _Depth > 0;
             _Seed = new System.Random();
-            _VolView = new VolViewCosmos(_Width, _Height, _Depth);
+            _VolView = new VolViewCosmos(_Width, _Height, _Depth, _Material);
             Setup3DSpace();
             SetupShader();
         }

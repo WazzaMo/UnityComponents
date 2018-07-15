@@ -113,7 +113,7 @@ namespace Tools.Common {
             bool isReady;
             if (__GetTextureData != null && __F1Kernel == UNINITIALISED_KERNEL) {
                 isReady = true;
-                __F1Kernel = ComputeShaderExt.FindKernelOrWarn(__GetTextureData, "GetTextureF1Data", ref isReady);
+                __F1Kernel = ComputeShaderExt.FindKernelOrWarn(__GetTextureData, "GetTextureF1Color", ref isReady);
             } else {
                 isReady = __GetTextureData != null && __F1Kernel != UNINITIALISED_KERNEL;
             }

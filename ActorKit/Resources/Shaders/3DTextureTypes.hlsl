@@ -16,4 +16,9 @@ struct SizeType
 	uint Depth;
 };
 
+uint indexFrom(in SizeType size, uint3 pos)
+{
+	return size.Width * (pos.y + size.Height * pos.z) + pos.x;
+}
+
 #endif // __3DTextureTypes__

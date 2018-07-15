@@ -33,6 +33,9 @@ namespace Tools.Common {
         }
 
         public static RenderTexture Create3D(int width, int height, int depth, RenderTextureFormat format, bool isWritable = true) {
+            if (width <= 0 || height <= 0 || depth <= 0) {
+                throw new ArgumentException( string.Format("Invalid width ({0}), height ({1}) or depth ({2}) values!", width, height, depth));
+            }
             var texture = new RenderTexture(width, height, 0, format);
             texture.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             texture.enableRandomWrite = isWritable;

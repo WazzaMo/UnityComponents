@@ -24,6 +24,10 @@ namespace Actor.Shader {
             Height = (int) height;
             Depth = (int) depth;
         }
+
+        public int CalcTotalSize() {
+            return Width * Height * Depth;
+        }
     }
 
 }

@@ -43,11 +43,21 @@ namespace Tools.Common {
 
 
         private static string Prefix<Tsource>() {
-            return Prefix(typeof(Tsource));
+            var typeInfo = typeof(Tsource);
+            if (typeInfo.IsGenericType) {
+                var param = typeInfo.GetGenericArguments().First();
+                return Prefix(typeInfo, param);
+            }
+            return Prefix(typeInfo);
         }
 
         private static string Prefix(Type t) {
             string prefix = string.Format("{0}: ", t.Name);
+            return prefix;
+        }
+
+        private static string Prefix(Type mainType, Type typeParam) {
+            string prefix = string.Format("{0}<{1}>: ", mainType.Name, typeParam.Name);
             return prefix;
         }
     }
