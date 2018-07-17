@@ -9,19 +9,18 @@
 
 #include "3DTextureTypes.hlsl"
 
-Buffer<SizeType>  Size;
+Buffer<SizeType>   Size;
 
-// Parameter Options
+Texture3D<float4>  InTextureF4;
 
-Texture3D<float4> InTextureF4;
-
-Texture3D<float>  InTextureF1;
-RWTexture3D<float> OutTexture1F;
+Texture3D<float>   InTextureF1;
+RWTexture3D<float> OutTextureF1;
 
 Buffer<float>      InData;
-RWBuffer<float>   OutData;
+RWBuffer<float>    OutData;
 
-RWBuffer<float4>  OutColors;
+Buffer<float4>     InColors;
+RWBuffer<float4>   OutColors;
 
 //----------------------
 #pragma kernel GetTextureF4Data
@@ -40,11 +39,18 @@ void GetTextureF4Data (uint3 id : SV_DispatchThreadID)
 [numthreads(GROUP_SIZE,GROUP_SIZE,1)]
 void GetTextureF1Color (uint3 id : SV_DispatchThreadID)
 {
-	// OutColors[ indexFrom(Size[0],id)] = InTextureF1[id];
 	float val = InTextureF1[id];
 	OutColors[ indexFrom(Size[0],id)] = float4(val,0,0,val);
 }
+//---------
+#pragma kernel SetTextureF1Color
 
+[numthreads(GROUP_SIZE,GROUP_SIZE,1)]
+void SetTextureF1Color (uint3 id : SV_DispatchThreadID)
+{
+	float4 color = InColors[ indexFrom(Size[0],id)];
+	OutTextureF1[id] = color.r;
+}
 //---------
 #pragma kernel GetTextureF1Data
 
@@ -62,5 +68,5 @@ void GetTextureF1Data (uint3 id : SV_DispatchThreadID)
 [numthreads(1,1,1)]
 void SetTextureF1Data(uint3 tID : SV_DISPATCHTHREADID)
 {
-	OutTexture1F[tID] = InData[ indexFrom(Size[0],tID) ];
+	OutTextureF1[tID] = InData[ indexFrom(Size[0],tID) ];
 }

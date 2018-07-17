@@ -21,15 +21,19 @@ namespace Actor.Shader {
         const string
             SHADERPROP_OUT_RFLOAT       = "OutData",
             SHADERPROP_IN_RFLOAT        = "InData",
+            SHADERPROP_OUT_COLOR        = "OutColors",
+            SHADERPROP_IN_COLOR         = "InColors",
             SHADERPROP_TEXT_IN_RGBA     = "InTextureF4",
             SHADERPROP_TEXT_OUT_RGBA    = "",
             SHADERPROP_TEXT_IN_RFLOAT   = "InTextureF1",
-            SHADERPROP_TEXT_OUT_RFLOAT  = "OutTexture1F",
+            SHADERPROP_TEXT_OUT_RFLOAT  = "OutTextureF1",
             SHADERPROP_SIZE             = "Size",
             SHADERPROP_TIME             = "Time",
             SHADERKERNEL_RGBA           = "GetTextureF4Data",
             KERNELGET_RFLOAT            = "GetTextureF1Data",
             KERNELSET_RFLOAT            = "SetTextureF1Data",
+            KERNELGET_RFLOATCOLOR       = "GetTextureF1Color",
+            KERNELSET_RFLOATCOLOR       = "SetTextureF1Color",
             SHADERPATH                  = "Shaders/3DTextureSupport";
 
         public enum TextureFormat {
@@ -40,11 +44,13 @@ namespace Actor.Shader {
         private RenderTexture _3dTexture;
         private ComputeBuffer _SizeBuffer;
         private ComputeBuffer _DataBuffer;
+        private ComputeBuffer _ColorsBuffer;
         private ComputeShader _ReadWriteShader;
         private TextureFormat _Format;
         private HlslSizeType  __Size;
         private int _KernelRGBA, _KernelSetRGBA;
         private int _KernelGetRFloat, _KernelSetRFloat;
+        private int _KernelGetRFloatColor, _KernelSetRFloatColor;
         private int _TotalDataSize;
         private bool _IsReady;
 
@@ -64,9 +70,10 @@ namespace Actor.Shader {
         }
 
         public void Dispose() {
-            DisposablesUtil.DisposeAll(_SizeBuffer, _DataBuffer);
+            DisposablesUtil.DisposeAll(_SizeBuffer, _DataBuffer, _ColorsBuffer);
             _SizeBuffer = null;
             _DataBuffer = null;
+            _ColorsBuffer = null;
             if (_3dTexture != null) {
                 _3dTexture.Release();
                 _3dTexture = null;
@@ -77,6 +84,10 @@ namespace Actor.Shader {
             if (shader != null && IsTextureReady) {
                 shader.SetTexture(kernel, nameID, _3dTexture);
             }
+        }
+
+        public void SetTextureInfo(Material mat, string nameId) {
+            mat.SetTexture(nameId, _3dTexture);
         }
 
         public int Pos(int x, int y, int z) {
@@ -119,8 +130,31 @@ namespace Actor.Shader {
             return result;
         }
 
+        public void SetPixels(Color[] colors) {
+            if (_IsReady) {
+                if (colors.Length == _TotalDataSize) {
+                    _ColorsBuffer.SetData(colors);
+                    PerformWriteRFloatColor();
+                } else {
+                    Logging.Warning<Texture3DCompute>("Cannot use SetPixels() - expected {0} colors but was given {1} colors", colors.Length, _TotalDataSize);
+                }
+            } else {
+                Logging.Warning<Texture3DCompute>("Not initialized");
+            }
+        }
+
+        public bool TryGetPixels(Color[] colors) {
+            bool result = false;
+            if(_IsReady) {
+                PerformReadRFloatColor();
+                _ColorsBuffer.GetData(colors);
+                result = true;
+            }
+            return result;
+        }
+
         ~Texture3DCompute() {
-            if (_SizeBuffer != null || _DataBuffer != null) {
+            if (_SizeBuffer != null || _DataBuffer != null || _ColorsBuffer != null) {
                 Logging.Warning<Texture3DCompute>("Use the IDisposable interface to clean up resources!");
                 Dispose();
             }
@@ -138,6 +172,20 @@ namespace Actor.Shader {
             _ReadWriteShader.SetBuffer(_KernelGetRFloat, SHADERPROP_SIZE, _SizeBuffer);
             _ReadWriteShader.SetBuffer(_KernelGetRFloat, SHADERPROP_OUT_RFLOAT, _DataBuffer);
             _ReadWriteShader.Dispatch(_KernelGetRFloat, __Size.Width, __Size.Height, __Size.Depth);
+        }
+
+        private void PerformWriteRFloatColor() {
+            _ReadWriteShader.SetTexture(_KernelSetRFloatColor, SHADERPROP_TEXT_OUT_RFLOAT, _3dTexture);
+            _ReadWriteShader.SetBuffer(_KernelSetRFloatColor, SHADERPROP_SIZE, _SizeBuffer);
+            _ReadWriteShader.SetBuffer(_KernelSetRFloatColor, SHADERPROP_IN_COLOR, _DataBuffer);
+            _ReadWriteShader.Dispatch(_KernelSetRFloatColor, __Size.Width, __Size.Height, __Size.Depth);
+        }
+
+        private void PerformReadRFloatColor() {
+            _ReadWriteShader.SetTexture(_KernelGetRFloatColor, SHADERPROP_TEXT_IN_RFLOAT, _3dTexture);
+            _ReadWriteShader.SetBuffer(_KernelGetRFloatColor, SHADERPROP_SIZE, _SizeBuffer);
+            _ReadWriteShader.SetBuffer(_KernelGetRFloatColor, SHADERPROP_OUT_COLOR, _DataBuffer);
+            _ReadWriteShader.Dispatch(_KernelGetRFloatColor, __Size.Width, __Size.Height, __Size.Depth);
         }
 
         private void SetupShaderTextureAndKernels() {
@@ -167,10 +215,20 @@ namespace Actor.Shader {
             }
         }
 
+        private void SetupColorsBuffer() {
+            if (_IsReady) {
+                _ColorsBuffer = ComputeBufferUtil.CreateBufferForSimpleArray<Color>(_TotalDataSize);
+            } else {
+                Logging.Warning<Texture3DCompute>("Not ready; cannot create color buffer!");
+            }
+        }
+
         private void SetupTextureAndKernelFloatR() {
             _3dTexture = RenderTextureUtil.Create3D(__Size.Width, __Size.Height, __Size.Depth, RenderTextureFormat.RFloat, true);
             _KernelGetRFloat = _ReadWriteShader.FindKernelOrWarn(KERNELGET_RFLOAT, ref _IsReady);
             _KernelSetRFloat = _ReadWriteShader.FindKernelOrWarn(KERNELSET_RFLOAT, ref _IsReady);
+            _KernelGetRFloatColor = _ReadWriteShader.FindKernelOrWarn(KERNELGET_RFLOATCOLOR, ref _IsReady);
+            _KernelSetRFloatColor = _ReadWriteShader.FindKernelOrWarn(KERNELSET_RFLOATCOLOR, ref _IsReady);
         }
 
         private void SetupTextureAndKernelRGBA() {
